@@ -1,5 +1,37 @@
 ---
 
+users:
+  - name: rclone
+    id: 10100
+    groups: rclone
+  - name: movies
+    id: 10110
+    groups: movies, rclone
+    host_mount: yes
+  - name: tv-shows
+    id: 10111
+    groups: tv-shows, rclone
+    host_mount: yes
+  - name: downloads
+    id: 10200
+    groups: downloads
+    host_mount: yes
+  - name: transmission
+    id: 10210
+    groups: transmission, downloads
+    host_mount: yes
+  - name: radarr
+    id: 10220
+    groups: radarr, downloads, movies
+    host_mount: yes
+  - name: sonarr
+    id: 10221
+    groups: sonarr, downloads, tv-shows
+    host_mount: yes
+  - name: plex
+    id: 10300
+    groups: plex, movies, tv-shows
+
 # Pin Docker version 18.06 from the stable channel.
 # docker_version: "18.06"
 

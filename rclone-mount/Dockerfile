@@ -35,16 +35,8 @@ ENV MOUNT_POINT=/data
 #     MountCommands="--allow-other --allow-non-empty" \
 #     UnmountCommands="-u -z"
 
-RUN mkdir -p $MOUNT_POINT $CONFIG_DIR
-    # && addgroup -g $GID_RCLONE -S rclone \
-    # && adduser -u $UID_RCLONE -S rclone \
-    # && addgroup -g $GID_DIR -S $DIR_NAME \
-    # && adduser -u $UID_DIR -S $DIR_NAME -G $DIR_NAME \
-    # && adduser -u $UID_DIR -G rclone \
-    # && chown -R $DIR_NAME:$DIR_NAME $MOUNT_POINT \
-    # && chmod 770 $MOUNT_POINT \
-    # && chown -R rclone:rclone $CONFIG_DIR \
-    # && chmod 770 $CONFIG_DIR \
+RUN mkdir -p $MOUNT_POINT $CONFIG_DIR \
+    && rclone mkdir $REMOTE_PATH
 CMD rclone mount --config="$CONFIG_PATH" $REMOTE_PATH $MOUNT_POINT
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

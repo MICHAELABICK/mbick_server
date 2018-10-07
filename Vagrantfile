@@ -92,25 +92,12 @@ Vagrant.configure("2") do |config|
 
   config.env.enable # enable the environment variable plugin
 
-  # config.vm.provision :shell, inline: "apt-get update"
-  config.vm.provision "shell" do |s|
-    s.inline = "mkdir -p $1 && echo Created $1"
-    s.args = ENV['LOCAL_MEDIA']
-  end
-  config.vm.provision "shell" do |s|
-    s.inline = "mkdir -p $1 && echo Created $1"
-    s.args = ENV['LOCAL_DOWNLOADS']
-  end
-
-  # config.vm.provision :docker
-  # config.vm.provision :docker_compose, yml: "/vagrant/docker-compose.yml", run: "always", compose_version: "1.22.0"
-
   config.vm.provision "ansible" do |ansible|
     ansible.verbose = "v"
     ansible.playbook = "provisioning/docker-host.yml"
     ansible.groups = {
+      "dev-hosts" => ["mbick-server"],
       "py3-hosts" => ["mbick-server"],
-      # "py3-hosts:vars" => {"ansible_python_interpreter" => "/usr/bin/python3"}
     }
   end
 end
