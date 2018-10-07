@@ -1,0 +1,43 @@
+version: '3.7'
+# volumes:
+#   media:
+#     driver: sapk/plugin-rclone:latest
+#     driver_opts:
+#       config: "$(base64 /vagrant/config/rclone/.rclone.conf)"
+#       args: "--read-only --fast-list"
+#       remote: "gt-onedrive:/media"
+
+services:
+  downloads-rclone:
+    build:
+      context: ./rclone-mount
+      target: ${BUILD_TYPE}
+    # env_file:
+    #   - .env
+    # restart: on-failure
+    env_file:
+      - .env
+    environment:
+      - REMOTE_PATH=${REMOTE_DIR}/downloads
+      # - DIR_NAME=downloads
+      # - UID_DIR=${UID_DOWNLOADS}
+      # - GID_DIR=${GID_DOWNLOADS}
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ${LOCAL_DIR}/downloads:/data:shared
+      - ./config/rclone:/config
+    # command: ls -l /config
+
+  torrent:
+    build:
+      context: ./torrent
+    depends_on:
+      - downloads-rclone
+    volumes:
+      - ${LOCAL_DIR}/downloads:/mnt/downloads:shared
+    command: ls -l /mnt/downloads

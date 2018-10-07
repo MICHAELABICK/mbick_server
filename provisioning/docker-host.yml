@@ -1,0 +1,7 @@
+---
+- hosts: all
+  sudo: true
+  become: true
+  roles:
+    - { role: "nickjj.docker", tags: ["docker"] }
+  tasks:
