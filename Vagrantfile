@@ -104,6 +104,6 @@ Vagrant.configure("2") do |config|
   # config.vm.provision :docker_compose, yml: "/vagrant/docker-compose.yml", run: "always", compose_version: "1.22.0"
 
   config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "deploy.yml"
+    ansible.playbook = "provisioning/docker-host.yml"
   end
 end
