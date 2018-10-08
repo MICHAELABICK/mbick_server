@@ -18,7 +18,17 @@ RUN git checkout $RCLONE_VERSION \
     && rclone version
 
 
-FROM alpine AS dev
+FROM alpine AS base
+# RUN \
+#     echo "**** create abc user and make our folders ****" \
+#     && addgroup -g $GUID -S abc \
+#     && adduser -u $PUID -g $GUID abc \
+#     && mkdir -p \
+#         /config
+
+# COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
 RUN apk add --no-cache --update \
     ca-certificates \
     fuse \
@@ -26,23 +36,18 @@ RUN apk add --no-cache --update \
     && rm -rf /tmp/* /var/cache/apk/* /var/lib/apk/lists/*
 COPY --from=builder /go/bin/rclone /usr/sbin
 
-ENV DIR_NAME=dir
-ENV CONFIG_DIR=/config
 ENV CONFIG_NAME=rclone.conf
-ENV CONFIG_PATH=$CONFIG_DIR/$CONFIG_NAME
+ENV CONFIG_PATH=/config/$CONFIG_NAME
 
 ENV MOUNT_POINT=/data
 #     MountCommands="--allow-other --allow-non-empty" \
 #     UnmountCommands="-u -z"
 
-RUN mkdir -p $MOUNT_POINT $CONFIG_DIR \
-    && rclone mkdir $REMOTE_PATH
-CMD rclone mount --config="$CONFIG_PATH" $REMOTE_PATH $MOUNT_POINT
-
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+RUN rclone mkdir $RCLONE_REMOTE_MOUNT
+VOLUME /config
+CMD rclone mount --config="$CONFIG_PATH" $RCLONE_REMOTE_MOUNT $MOUNT_POINT
 
 FROM base AS dev
 
 FROM base AS prod
-COPY ./config/rclone $CONFIG_DIR
+COPY ./config/rclone /config

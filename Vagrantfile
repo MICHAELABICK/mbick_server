@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/bionic64"
 
-  config.vm.define "mbick-server"
+  config.vm.define "dev-docker"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -94,10 +94,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "ansible" do |ansible|
     ansible.verbose = "v"
-    ansible.playbook = "provisioning/docker-host.yml"
+    ansible.playbook = "provisioning/provision.yml"
     ansible.groups = {
-      "dev-hosts" => ["mbick-server"],
-      "py3-hosts" => ["mbick-server"],
+      "dev-hosts" => ["dev-docker"],
+      "py3-hosts" => ["dev-docker"],
     }
   end
 end

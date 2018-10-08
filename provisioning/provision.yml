@@ -1,24 +1,30 @@
 ---
 - hosts: all
   become: yes
+  pre_tasks:
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        state: present
   roles:
     - { role: "nickjj.docker", tags: ["docker"] }
 
   tasks:
     - name: Create groups
       group:
-        gid: "{{ item.id }}"
         name: "{{ item.name }}"
+        gid: "{{ item.id }}"
         state: present
-      loop: "{{ users }}"
+      loop: "{{ ct_users }}"
 
     - name: Create users
       user:
         name: "{{ item.name }}"
-        groups: "{{ item.groups }}"
-        state: present
         uid: "{{ item.id }}"
-      loop: "{{ users }}"
+        groups: "[ '{{ item.name }}' ] + {{ item.groups | default([]) }}"
+        create_home: no
+        state: present
+      loop: "{{ ct_users }}"
 
     - name: Create mountpoints for containers
       file:
@@ -27,8 +33,16 @@
         group: "{{ item.name }}"
         state: directory
         mode: 0775
-      loop: "{{ users }}"
-      when: item.host_mount is defined and item.host_mount
+      loop: "{{ ct_users }}"
+      when: item.host_mount is defined
+
+    - name: Add container users to vagrant group for development
+      user:
+        name: "{{ item.name }}"
+        groups:
+          - vagrant
+        append: yes
+      loop: "{{ ct_users }}"
 
     # - name: Build and run docker-compose
     #   shell: ls && docker-compose up -d

@@ -1,36 +1,42 @@
 ---
-
-users:
+ct_users:
   - name: rclone
     id: 10100
-    groups: rclone
   - name: movies
     id: 10110
-    groups: movies, rclone
-    host_mount: yes
+    groups:
+      - rclone
+    mount_type: rclone
   - name: tv-shows
     id: 10111
-    groups: tv-shows, rclone
-    host_mount: yes
+    groups:
+      - rclone
+    mount_type: rclone
   - name: downloads
     id: 10200
-    groups: downloads
-    host_mount: yes
+    mount_type: rclone
   - name: transmission
     id: 10210
-    groups: transmission, downloads
-    host_mount: yes
+    groups:
+      - downloads
+    mount_type: rclone
   - name: radarr
     id: 10220
-    groups: radarr, downloads, movies
-    host_mount: yes
+    groups:
+      - downloads
+      - movies
+    mount_type: rclone
   - name: sonarr
     id: 10221
-    groups: sonarr, downloads, tv-shows
-    host_mount: yes
+    groups:
+      - downloads
+      - tv-shows
+    mount_type: rclone
   - name: plex
     id: 10300
-    groups: plex, movies, tv-shows
+    groups:
+      - movies
+      - tv-shows
 
 # Pin Docker version 18.06 from the stable channel.
 # docker_version: "18.06"
@@ -39,12 +45,12 @@ users:
 docker_users: ["vagrant"]
 
 # A couple of examples of authenticating to a Docker registry.
-# docker_registries:
-#   # Authenticate to the Docker Hub, and allow the "admin" system user acces to it:
-#   - username: "your_docker_hub_username"
-#     password: "your_docker_hub_password"
-#     email: "your_docker_hub@emailaddress.com"
-#     system_user: "{{ docker_users | first }}"
+docker_registries:
+  # Authenticate to the Docker Hub, and allow the "admin" system user acces to it:
+  - username: "mbick"
+    password: "PrabotnouDrecIk+"
+    email: "mafbick@gmail.com"
+    system_user: "{{ docker_users | first }}"
 #   # Authenticate to some other private registry and allow "zerocool":
 #   - registry_url: "https://your-registry.com"
 #     username: "some_other_username"
