@@ -45,12 +45,12 @@ ct_users:
 docker_users: ["vagrant"]
 
 # A couple of examples of authenticating to a Docker registry.
-docker_registries:
-  # Authenticate to the Docker Hub, and allow the "admin" system user acces to it:
-  - username: "mbick"
-    password: "PrabotnouDrecIk+"
-    email: "mafbick@gmail.com"
-    system_user: "{{ docker_users | first }}"
+# docker_registries:
+#   # Authenticate to the Docker Hub, and allow the "admin" system user acces to it:
+#   - username: "mbick"
+#     password: ""
+#     email: "mafbick@gmail.com"
+#     system_user: "{{ docker_users | first }}"
 #   # Authenticate to some other private registry and allow "zerocool":
 #   - registry_url: "https://your-registry.com"
 #     username: "some_other_username"
