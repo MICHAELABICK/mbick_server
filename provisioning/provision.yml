@@ -12,6 +12,7 @@
         state: present
   roles:
     - { role: "nickjj.docker", tags: ["docker"] }
+    - mbick_services
 
   tasks:
     - name: Install docker module

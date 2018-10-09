@@ -1,5 +1,10 @@
 tags
+/build*
 /.vagrant
+
+# Make sure not to save configs
+*.conf
+
 *.log
 *.retry
-*.conf
+*.swp

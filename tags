@@ -6,14 +6,14 @@
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
 !_TAG_PROGRAM_VERSION	0.0.0	/744610c/
 gt-onedrive	config/rclone/rclone.conf	/^[gt-onedrive]$/;"	s
-gt-onedrive	rclone-mount-wrapper/config/.rclone.conf	/^[gt-onedrive]$/;"	s
-gt-onedrive	rclone-mount/config/rclone.conf	/^[gt-onedrive]$/;"	s
+gt-onedrive	src/rclone-mount-wrapper/config/.rclone.conf	/^[gt-onedrive]$/;"	s
+gt-onedrive	src/rclone-mount/config/rclone.conf	/^[gt-onedrive]$/;"	s
 resource_url	config/rclone/rclone.conf	/^resource_url = https:\/\/gtvault-my.sharepoint.com\/$/;"	k	section:gt-onedrive
-resource_url	rclone-mount-wrapper/config/.rclone.conf	/^resource_url = https:\/\/gtvault-my.sharepoint.com\/$/;"	k	section:gt-onedrive
-resource_url	rclone-mount/config/rclone.conf	/^resource_url = https:\/\/gtvault-my.sharepoint.com\/$/;"	k	section:gt-onedrive
+resource_url	src/rclone-mount-wrapper/config/.rclone.conf	/^resource_url = https:\/\/gtvault-my.sharepoint.com\/$/;"	k	section:gt-onedrive
+resource_url	src/rclone-mount/config/rclone.conf	/^resource_url = https:\/\/gtvault-my.sharepoint.com\/$/;"	k	section:gt-onedrive
 token	config/rclone/rclone.conf	/^token = {"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Imk2bEdrM0ZaenhSY1ViMkMzbkV/;"	k	section:gt-onedrive
-token	rclone-mount-wrapper/config/.rclone.conf	/^token = {"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Imk2bEdrM0ZaenhSY1ViMkMzbkV/;"	k	section:gt-onedrive
-token	rclone-mount/config/rclone.conf	/^token = {"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Imk2bEdrM0ZaenhSY1ViMkMzbkV/;"	k	section:gt-onedrive
+token	src/rclone-mount-wrapper/config/.rclone.conf	/^token = {"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Imk2bEdrM0ZaenhSY1ViMkMzbkV/;"	k	section:gt-onedrive
+token	src/rclone-mount/config/rclone.conf	/^token = {"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Imk2bEdrM0ZaenhSY1ViMkMzbkV/;"	k	section:gt-onedrive
 type	config/rclone/rclone.conf	/^type = onedrive$/;"	k	section:gt-onedrive
-type	rclone-mount-wrapper/config/.rclone.conf	/^type = onedrive$/;"	k	section:gt-onedrive
-type	rclone-mount/config/rclone.conf	/^type = onedrive$/;"	k	section:gt-onedrive
+type	src/rclone-mount-wrapper/config/.rclone.conf	/^type = onedrive$/;"	k	section:gt-onedrive
+type	src/rclone-mount/config/rclone.conf	/^type = onedrive$/;"	k	section:gt-onedrive

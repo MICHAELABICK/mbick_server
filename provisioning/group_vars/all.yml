@@ -1,7 +1,11 @@
 ---
-src_dir: /vagrant
 build_type: dev
 timezone: Atlanta/America
+
+docker_compose_file_version
+
+src_dir: /vagrant
+build_dir: /vagrant/build
 
 ct_users:
   - name: media

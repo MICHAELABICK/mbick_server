@@ -1,4 +1,4 @@
-version: '3.7'
+version: '{{ docker_compose_file_version }}'
 
 services:
 {% for vol in volumes %}
@@ -18,8 +18,8 @@ services:
       - apparmor:unconfined
     volumes:
       - {{ mount_dir }}/{{ vol.name }}:/data:shared
-{% endfor %}
 
+{% endfor %}
 {% for ct in containers %}
   {{ ct.name }}:
     image: {{ ct.image }}

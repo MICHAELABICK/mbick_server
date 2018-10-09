@@ -1,0 +1,10 @@
+---
+- name: Create build directory
+  file:
+    path: "{{ build_dir }}"
+    state: directory
+
+- name: Build docker-compose.yml
+  template:
+    src: ./templates/docker-compose.yml.j2
+    dest: "{{ src_dir }}/build/docker-compose.yml"
