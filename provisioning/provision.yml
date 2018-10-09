@@ -26,7 +26,8 @@
         name: "{{ item.name }}"
         uid: "{{ item.id }}"
         groups: "[ '{{ item.name }}' ] + {{ item.groups | default([]) }}"
-        create_home: no
+        # create_home: no
+        system: yes
         state: present
       loop: "{{ ct_users }}"
 
@@ -38,18 +39,17 @@
     - name: Create mountpoints for containers
       file:
         path: "{{ mount_dir }}/{{ item.name }}"
-        owner: "{{ item.name }}"
-        group: "{{ item.name }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.owner }}"
         state: directory
         mode: 0775
-      loop: "{{ ct_users }}"
-      when: item.mount_type is defined
+      loop: "{{ volumes }}"
 
-    - name: Add container users to vagrant group for development
+    - name: Add Vagrant user to all container groups
       user:
-        name: "{{ item.name }}"
+        name: vagrant
         groups:
-          - vagrant
+          - "{{ item.name }}"
         append: yes
       loop: "{{ ct_users }}"
 

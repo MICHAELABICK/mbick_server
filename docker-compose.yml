@@ -17,8 +17,8 @@ services:
     # restart: on-failure
     environment:
       - RCLONE_REMOTE_MOUNT=${REMOTE_DIR}/downloads
-      - PUID=10200
-      - PGID=10200
+      - PUID=10000
+      - PGID=10000
     cap_add:
       - SYS_ADMIN
     devices:

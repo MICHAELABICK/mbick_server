@@ -1,44 +1,84 @@
 ---
-mount_dir: /mnt
-
+timezone: Atlanta/America
 ct_users:
-  - name: rclone
-    id: 10100
-  - name: movies
-    id: 10110
-    groups:
-      - rclone
-    mount_type: rclone
-  - name: tv-shows
-    id: 10111
-    groups:
-      - rclone
-    mount_type: rclone
-  - name: downloads
-    id: 10200
-    mount_type: rclone
+  - name: media
+    id: 10000
+
+containers:
   - name: transmission
-    id: 10210
-    groups:
-      - downloads
-    mount_type: rclone
-  - name: radarr
-    id: 10220
-    groups:
-      - downloads
-      - movies
-    mount_type: rclone
-  - name: sonarr
-    id: 10221
-    groups:
-      - downloads
-      - tv-shows
-    mount_type: rclone
-  - name: plex
-    id: 10300
-    groups:
-      - movies
-      - tv-shows
+    user: media
+    volumes:
+      - source: transmission-config
+        dest: /config
+      - source: downloads
+        dest: /downloads
+      - source: transmission-watch
+        dest: /watch
+
+mount_dir: /mnt/volumes
+volumes:
+  # - name: movies
+  #   type: rclone
+  #   owner: media
+  #   encrypt: yes
+  # - name: tv-shows
+  #   type: rclone
+  #   owner: media
+  #   encrypt: yes
+  - name: downloads
+    type: rclone
+    owner: media
+  - name: transmission-watch
+    type: rclone
+    owner: media
+  - name: transmission-config
+    type: rclone
+    owner: media
+  # - name: radarr
+  #   type: rclone
+  #   owner: media
+  # - name: sonarr
+  #   type: rclone
+  #   owner: media
+
+# ct_users:
+#   - name: rclone
+#     id: 10100
+#   - name: movies
+#     id: 10110
+#     groups:
+#       - rclone
+#     mount_type: rclone
+#   - name: tv-shows
+#     id: 10111
+#     groups:
+#       - rclone
+#     mount_type: rclone
+#   - name: downloads
+#     id: 10200
+#     mount_type: rclone
+#   - name: transmission
+#     id: 10210
+#     groups:
+#       - downloads
+#     mount_type: rclone
+#   - name: radarr
+#     id: 10220
+#     groups:
+#       - downloads
+#       - movies
+#     mount_type: rclone
+#   - name: sonarr
+#     id: 10221
+#     groups:
+#       - downloads
+#       - tv-shows
+#     mount_type: rclone
+#   - name: plex
+#     id: 10300
+#     groups:
+#       - movies
+#       - tv-shows
 
 # Pin Docker version 18.06 from the stable channel.
 # docker_version: "18.06"
