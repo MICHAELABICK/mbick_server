@@ -9,7 +9,6 @@ version: '3.7'
 
 services:
   downloads-rclone:
-    # image: tynor88/rclone-mount:dev
     build:
       context: ./rclone-mount-wrapper
       target: ${BUILD_TYPE}
@@ -28,7 +27,7 @@ services:
       - apparmor:unconfined
     volumes:
       - ${LOCAL_DIR}/downloads:/data:shared
-      - ./config/rclone:/config:rw
+      # - ./config/rclone:/config:rw
     # command: ls -l /config
 
   # downloads-rclone:
@@ -39,9 +38,9 @@ services:
   #     - .env
   #   # restart: on-failure
   #   environment:
-  #     - RCLONE_REMOTE_PATH=${REMOTE_DIR}/downloads
-  #     # - PUID=${UID_DOWNLOADS}
-  #     # - PGID=${GID_DOWNLOADS}
+  #     - RCLONE_REMOTE_MOUNT=${REMOTE_DIR}/downloads
+  #     - PUID=10200
+  #     - PGID=10200
   #   cap_add:
   #     - SYS_ADMIN
   #   devices:
@@ -50,7 +49,7 @@ services:
   #     - apparmor:unconfined
   #   volumes:
   #     - ${LOCAL_DIR}/downloads:/data:shared
-  #     - ./config/rclone:/config:rw
+  #     # - ./config/rclone:/config:rw
   #   # command: ls -l /config
 
   # torrent:

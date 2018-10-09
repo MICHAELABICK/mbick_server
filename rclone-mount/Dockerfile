@@ -1,3 +1,14 @@
+FROM alpine AS mbick-base
+# Install su-exec
+RUN apk add --no-cache \
+    ca-certificates \
+    su-exec \
+    && rm -rf /tmp/* /var/cache/apk/* /var/lib/apk/lists/*
+
+FROM alpine AS entrypoint
+
+COPY entrypoint.sh /entrypoint.sh
+
 FROM golang:alpine AS builder
 RUN apk add --no-cache --update \
     git \
@@ -18,19 +29,8 @@ RUN git checkout $RCLONE_VERSION \
     && rclone version
 
 
-FROM alpine AS base
-# RUN \
-#     echo "**** create abc user and make our folders ****" \
-#     && addgroup -g $GUID -S abc \
-#     && adduser -u $PUID -g $GUID abc \
-#     && mkdir -p \
-#         /config
-
-# COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
+FROM mbick-base AS base
 RUN apk add --no-cache --update \
-    ca-certificates \
     fuse \
     fuse-dev \
     && rm -rf /tmp/* /var/cache/apk/* /var/lib/apk/lists/*
@@ -43,11 +43,14 @@ ENV MOUNT_POINT=/data
 #     MountCommands="--allow-other --allow-non-empty" \
 #     UnmountCommands="-u -z"
 
-RUN rclone mkdir $RCLONE_REMOTE_MOUNT
 VOLUME /config
+COPY ./config /config
+
+COPY --from=entrypoint /entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["sh","/usr/local/bin/entrypoint.sh"]
 CMD rclone mount --config="$CONFIG_PATH" $RCLONE_REMOTE_MOUNT $MOUNT_POINT
 
 FROM base AS dev
 
-FROM base AS prod
-COPY ./config/rclone /config
+# FROM base AS prod
+# COPY ./config/rclone /config

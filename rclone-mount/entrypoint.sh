@@ -1,13 +1,24 @@
 #!/bin/bash
 
-# Add local user
-# Either use the LOCAL_USER_ID if passed in at runtime or
-# fallback
+PUID=${PUID:-9001}
+PGID=${PGID:-9001}
 
-USER_ID=$UID_DIR
+addgroup -g $PGID -S abc
+adduser -u $PUID -G abc -S abc
 
-echo "Starting with UID : $USER_ID"
-# useradd --shell /bin/bash -u $USER_ID -o -c "" -m user
-# export HOME=/home/user
+echo "Starting with UID : $PUID"
+echo "Starting with GID : $PGID"
 
-su-exec $UID_DIR:$UID_DIR "$@"
+mkdir -p \
+  /config
+# rclone mkdir $RCLONE_REMOTE_MOUNT
+
+chown -R abc:abc \
+  /config
+  # /data
+# chmod 775 \
+  # /config
+  # /data
+ls -la /data
+
+exec su-exec abc:abc "$@"

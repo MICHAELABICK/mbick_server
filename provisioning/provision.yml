@@ -30,15 +30,20 @@
         state: present
       loop: "{{ ct_users }}"
 
+    - name: Create mount directory
+      file:
+        path: "{{ mount_dir }}"
+        state: directory
+
     - name: Create mountpoints for containers
       file:
-        path: "/mnt/disks/{{ item.name }}"
+        path: "{{ mount_dir }}/{{ item.name }}"
         owner: "{{ item.name }}"
         group: "{{ item.name }}"
         state: directory
         mode: 0775
       loop: "{{ ct_users }}"
-      when: item.host_mount is defined
+      when: item.mount_type is defined
 
     - name: Add container users to vagrant group for development
       user:

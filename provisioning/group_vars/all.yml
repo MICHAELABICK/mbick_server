@@ -1,4 +1,6 @@
 ---
+mount_dir: /mnt
+
 ct_users:
   - name: rclone
     id: 10100
