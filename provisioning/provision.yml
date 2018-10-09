@@ -62,5 +62,7 @@
         append: yes
       loop: "{{ ct_users }}"
 
-    # - name: Build and run docker-compose
-    #   shell: ls && docker-compose up -d
+    - name: Build and run docker-compose
+      shell: docker-compose up -d
+      args:
+        chdir: "{{ build_dir }}"
