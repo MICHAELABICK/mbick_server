@@ -14,6 +14,14 @@
     - { role: "nickjj.docker", tags: ["docker"] }
 
   tasks:
+    - name: Install docker module
+      pip:
+        name: docker
+
+    - name: Install docker-compose module
+      pip:
+        name: docker-compose
+
     - name: Create groups
       group:
         name: "{{ item.name }}"

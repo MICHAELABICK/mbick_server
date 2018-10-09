@@ -1,11 +1,14 @@
 ---
+src_dir: /vagrant
+build_type: dev
 timezone: Atlanta/America
+
 ct_users:
   - name: media
     id: 10000
-
 containers:
   - name: transmission
+    image: linuxserver/transmission:154
     user: media
     volumes:
       - source: transmission-config
@@ -16,6 +19,7 @@ containers:
         dest: /watch
 
 mount_dir: /mnt/volumes
+rclone_dir: gt-onedrive:/mbick-server
 volumes:
   # - name: movies
   #   type: rclone

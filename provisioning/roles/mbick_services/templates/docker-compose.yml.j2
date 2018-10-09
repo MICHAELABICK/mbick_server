@@ -1,0 +1,34 @@
+version: '3.7'
+
+services:
+{% for vol in volumes %}
+  rclone-{{ vol.name }}:
+    build:
+      context: ./rclone-mount-wrapper
+      target: {{ build_type }}
+    environment:
+      - RCLONE_REMOTE_MOUNT={{ rclone_dir }}/{{ vol.name }}
+      - PUID=10000
+      - PGID=10000
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - {{ mount_dir }}/{{ vol.name }}:/data:shared
+{% endfor %}
+
+{% for ct in containers %}
+  {{ ct.name }}:
+    image: {{ ct.image }}
+    environment:
+      - PUID=10000
+      - PGID=10000
+      - TZ={{ timezone }}
+    volumes:
+    {% for vol in ct.volumes %}
+      - {{ mount_dir }}/{{ vol.source }}:{{ vol.dest }}
+    {% endfor %}
+{% endfor %}

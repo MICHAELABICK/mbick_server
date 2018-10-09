@@ -8,7 +8,7 @@ version: '3.7'
 #       remote: "gt-onedrive:/media"
 
 services:
-  downloads-rclone:
+  rclone-downloads:
     build:
       context: ./rclone-mount-wrapper
       target: ${BUILD_TYPE}
@@ -17,8 +17,8 @@ services:
     # restart: on-failure
     environment:
       - RCLONE_REMOTE_MOUNT=${REMOTE_DIR}/downloads
-      - PUID=10000
-      - PGID=10000
+      - PUID=${MEDIA_ID}
+      - PGID=${MEDIA_ID}
     cap_add:
       - SYS_ADMIN
     devices:
@@ -27,36 +27,11 @@ services:
       - apparmor:unconfined
     volumes:
       - ${LOCAL_DIR}/downloads:/data:shared
-      # - ./config/rclone:/config:rw
-    # command: ls -l /config
 
-  # downloads-rclone:
-  #   build:
-  #     context: ./rclone-mount
-  #     target: ${BUILD_TYPE}
-  #   env_file:
-  #     - .env
-  #   # restart: on-failure
-  #   environment:
-  #     - RCLONE_REMOTE_MOUNT=${REMOTE_DIR}/downloads
-  #     - PUID=10200
-  #     - PGID=10200
-  #   cap_add:
-  #     - SYS_ADMIN
-  #   devices:
-  #     - /dev/fuse
-  #   security_opt:
-  #     - apparmor:unconfined
-  #   volumes:
-  #     - ${LOCAL_DIR}/downloads:/data:shared
-  #     # - ./config/rclone:/config:rw
-  #   # command: ls -l /config
-
-  # torrent:
-  #   build:
-  #     context: ./torrent
-  #   depends_on:
-  #     - downloads-rclone
-  #   volumes:
-  #     - ${LOCAL_DIR}/downloads:/mnt/downloads:shared
-  #   command: ls -l /mnt/downloads
+  transmission:
+    image: linuxserver/transmission:145
+    depends_on:
+      - downloads-rclone
+    volumes:
+      - ${LOCAL_DIR}/downloads:/mnt/downloads:shared
+    command: ls -l /mnt/downloads
