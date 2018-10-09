@@ -36,4 +36,8 @@ services:
 {% for vol in ct.volumes %}
       - {{ mount_dir }}/{{ vol.source }}:{{ vol.dest }}
 {% endfor %}
+    ports:
+{% for port in ct.ports %}
+      - {{ port }}
+{% endfor %}
 {% endfor %}

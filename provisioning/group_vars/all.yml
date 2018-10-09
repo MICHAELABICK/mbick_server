@@ -21,6 +21,10 @@ containers:
         dest: /downloads
       - source: transmission-watch
         dest: /watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
 
 mount_dir: /mnt/volumes
 rclone_dir: gt-onedrive:/mbick-server
