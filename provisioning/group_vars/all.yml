@@ -1,10 +1,10 @@
 ---
-build_type: dev
 timezone: Atlanta/America
 
 docker_compose_file_version: 3.7
 
-src_dir: /vagrant
+root_dir: /vagrant
+src_dir: /vagrant/src
 build_dir: /vagrant/build
 
 ct_users:
@@ -12,7 +12,7 @@ ct_users:
     id: 10000
 containers:
   - name: transmission
-    image: linuxserver/transmission:154
+    image: linuxserver/transmission:145
     user: media
     volumes:
       - source: transmission-config
@@ -49,44 +49,7 @@ volumes:
   #   type: rclone
   #   owner: media
 
-# ct_users:
-#   - name: rclone
-#     id: 10100
-#   - name: movies
-#     id: 10110
-#     groups:
-#       - rclone
-#     mount_type: rclone
-#   - name: tv-shows
-#     id: 10111
-#     groups:
-#       - rclone
-#     mount_type: rclone
-#   - name: downloads
-#     id: 10200
-#     mount_type: rclone
-#   - name: transmission
-#     id: 10210
-#     groups:
-#       - downloads
-#     mount_type: rclone
-#   - name: radarr
-#     id: 10220
-#     groups:
-#       - downloads
-#       - movies
-#     mount_type: rclone
-#   - name: sonarr
-#     id: 10221
-#     groups:
-#       - downloads
-#       - tv-shows
-#     mount_type: rclone
-#   - name: plex
-#     id: 10300
-#     groups:
-#       - movies
-#       - tv-shows
+rclone_mount_options: --allow-non-empty
 
 # Pin Docker version 18.06 from the stable channel.
 # docker_version: "18.06"

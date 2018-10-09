@@ -4,7 +4,14 @@
     path: "{{ build_dir }}"
     state: directory
 
+- name: Copy source files to build directory
+  synchronize:
+    src: ../src/
+    dest: "{{ build_dir }}"
+    recursive: yes
+    delete: yes
+
 - name: Build docker-compose.yml
   template:
     src: ./templates/docker-compose.yml.j2
-    dest: "{{ src_dir }}/build/docker-compose.yml"
+    dest: "{{ build_dir }}/docker-compose.yml"

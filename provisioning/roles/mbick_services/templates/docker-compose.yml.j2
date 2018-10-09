@@ -2,12 +2,13 @@ version: '{{ docker_compose_file_version }}'
 
 services:
 {% for vol in volumes %}
-  rclone-{{ vol.name }}:
+  {{ vol.type }}-{{ vol.name }}:
     build:
       context: ./rclone-mount-wrapper
       target: {{ build_type }}
     environment:
       - RCLONE_REMOTE_MOUNT={{ rclone_dir }}/{{ vol.name }}
+      - RCLONE_MOUNT_OPTIONS={{ rclone_mount_options }}
       - PUID=10000
       - PGID=10000
     cap_add:
@@ -27,8 +28,12 @@ services:
       - PUID=10000
       - PGID=10000
       - TZ={{ timezone }}
+    depends_on:
+{% for vol in ct.volumes %}
+      - rclone-{{ vol.source }}
+{% endfor %}
     volumes:
-    {% for vol in ct.volumes %}
+{% for vol in ct.volumes %}
       - {{ mount_dir }}/{{ vol.source }}:{{ vol.dest }}
-    {% endfor %}
+{% endfor %}
 {% endfor %}
