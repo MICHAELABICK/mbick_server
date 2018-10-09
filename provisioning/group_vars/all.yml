@@ -2,7 +2,7 @@
 build_type: dev
 timezone: Atlanta/America
 
-docker_compose_file_version
+docker_compose_file_version: 3.7
 
 src_dir: /vagrant
 build_dir: /vagrant/build
