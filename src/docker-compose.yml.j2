@@ -1,10 +1,12 @@
 version: '{{ docker_compose_file_version }}'
+volumes:
+  test:
 
 services:
 {% for vol in volumes %}
   {{ vol.type }}-{{ vol.name }}:
     build:
-      context: ./rclone-mount-wrapper
+      context: {{ docker_dir }}/rclone-mount-wrapper
       target: {{ build_type }}
     environment:
       - RCLONE_REMOTE_MOUNT={{ rclone_dir }}/{{ vol.name }}

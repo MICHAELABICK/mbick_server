@@ -3,9 +3,14 @@ timezone: Atlanta/America
 
 docker_compose_file_version: 3.7
 
-root_dir: /vagrant
-src_dir: /vagrant/src
-build_dir: /vagrant/build
+root_dir: ..
+src_dir: ../src
+build_dir: /vagrant/build # on the host
+
+# These are defaults, that should be overrided
+# for certain groups of hosts
+build_type: prod
+docker_dir: "{{ build_dir }}"
 
 ct_users:
   - name: media
