@@ -30,20 +30,32 @@ containers:
       - 9091:9091
       - 51413:51413
       - 51413:51413/udp
+  - name: radarr
+    image: linuxserver/radarr:134
+    user: media
+    volumes:
+      - source: radarr-config
+        dest: /config
+      - source: downloads
+        dest: /downloads
+      - source: movies
+        dest: /movies
+    ports:
+      - 7878:7878
 
 mount_dir: /mnt/volumes
 rclone_dir: gt-onedrive:/mbick-server
 volumes:
-  # - name: movies
-  #   type: rclone
-  #   owner: media
-  #   encrypt: yes
+  - name: movies
+    type: rclone
+    owner: media
+    encrypt: yes
   # - name: tv-shows
   #   type: rclone
   #   owner: media
   #   encrypt: yes
   - name: downloads
-    type: rclone
+    type: named
     owner: media
   - name: transmission-watch
     type: rclone
@@ -51,9 +63,9 @@ volumes:
   - name: transmission-config
     type: rclone
     owner: media
-  # - name: radarr
-  #   type: rclone
-  #   owner: media
+  - name: radarr-config
+    type: rclone
+    owner: media
   # - name: sonarr
   #   type: rclone
   #   owner: media
