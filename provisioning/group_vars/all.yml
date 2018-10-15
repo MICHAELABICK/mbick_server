@@ -55,7 +55,7 @@ volumes:
     source: "{{ docker_dir }}/transmission/config"
     owner: media
   - name: radarr-config
-    type: bind
+    type: local
     source: "{{ docker_dir }}/radarr/config"
     owner: media
   # - name: sonarr-config

@@ -1,7 +1,7 @@
 {# TODO: custom filters - http://www.dasblinkenlichten.com/creating-ansible-filter-plugins/ #}
 version: '{{ docker_compose_file_version }}'
 volumes:
-{% for vol in volumes|rejectattr("type", "equalto", "mount-dir")|rejectattr("type", "equalto", "bind") %}
+{% for vol in volumes|named_volumes %}
   {{ vol.name }}:
 {% endfor %}
 
