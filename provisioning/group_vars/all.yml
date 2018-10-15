@@ -3,9 +3,8 @@ timezone: Atlanta/America
 
 docker_compose_file_version: 3.7
 
-root_dir: ..
-src_dir: ../src
-build_dir: /vagrant/build # on the host
+src_dir: ../src # on the local machine
+build_dir: /build # on the host
 
 # These are defaults, that should be overrided
 # for certain groups of hosts

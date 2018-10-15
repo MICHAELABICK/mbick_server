@@ -1,4 +1,7 @@
 ---
 build_type: dev
-docker_dir: "{{ src_dir }}"
+vagrant_root: /vagrant
+build_dir: "{{ vagrant_root }}/build"
+
+docker_dir: "{{ vagrant_root }}/src"
 mount_dir: "{{ build_dir }}/volumes"
