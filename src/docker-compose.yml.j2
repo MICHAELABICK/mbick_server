@@ -1,6 +1,7 @@
+{# TODO: custom filters - http://www.dasblinkenlichten.com/creating-ansible-filter-plugins/ #}
 version: '{{ docker_compose_file_version }}'
 volumes:
-{% for vol in volumes %}
+{% for vol in volumes|rejectattr("type", "equalto", "mount-dir")|rejectattr("type", "equalto", "bind") %}
   {{ vol.name }}:
 {% endfor %}
 
@@ -32,7 +33,9 @@ services:
       - PUID={{ (ct_users|selectattr("name", "equalto", ct.user )|first).id }}
       - PGID={{ (ct_users|selectattr("name", "equalto", ct.user )|first).id }}
       - TZ={{ timezone }}
+{% if ct.volumes|map(attribute="source")|intersect(volumes|selectattr("type", "equalto", "rclone")|map(attribute="name")) %}
     depends_on:
+{% endif %}
 {% for vol in ct.volumes %}
 {% if vol.source is in(volumes|selectattr("type", "equalto", "rclone")|map(attribute="name")) %}
       - rclone-{{ vol.source }}
@@ -40,8 +43,13 @@ services:
 {% endfor %}
     volumes:
 {% for vol in ct.volumes %}
+{% if vol.source is in(volumes|selectattr("type", "equalto", "mount-dir")|map(attribute="name")) %}
+      - {{ mount_dir }}/{{ vol.source }}:{{ vol.dest }}:shared
+{# TODO: add bind mount discovery here #}
+{% else %}
       # - {{vol.source }}:{{ vol.dest }}:nocopy
       - {{vol.source }}:{{ vol.dest }}
+{% endif %}
 {% endfor %}
     ports:
 {% for port in ct.ports %}

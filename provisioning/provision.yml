@@ -56,7 +56,7 @@
         group: "{{ item.owner }}"
         state: directory
         mode: 0775
-      loop: "{{ volumes|selectattr('type', 'equalto', 'local') }}"
+      loop: "{{ volumes|selectattr('type', 'equalto', 'mount-dir')|list }}"
 
     - name: Add Vagrant user to all container groups
       user:

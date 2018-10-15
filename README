@@ -1,0 +1,7 @@
+TODO: Add documentation about Ansible tags - http://www.inanzzz.com/index.php/post/wfj9/running-ansible-provisioning-by-passing-arguments-in-vagrant
+
+# Volume Types
+* bind: bind mounted to any directory on the host
+* mount-dir: bind mounted to the directory definied by `mount_dir`
+* local: creates a named volume with the local driver
+* rclone: creates a container that fuse mounts to a named directory, using rclone-mount
