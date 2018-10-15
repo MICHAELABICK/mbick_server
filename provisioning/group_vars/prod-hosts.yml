@@ -1,0 +1,6 @@
+---
+build_type: prod
+build_dir: /build # on the host
+
+docker_dir: "{{ build_dir }}"
+

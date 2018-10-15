@@ -1,15 +1,6 @@
 ---
-timezone: Atlanta/America
-
 docker_compose_file_version: 3.7
-
 src_dir: ../src # on the local machine
-build_dir: /build # on the host
-
-# These are defaults, that should be overrided
-# for certain groups of hosts
-build_type: prod
-docker_dir: "{{ build_dir }}"
 
 ct_users:
   - name: media
@@ -19,7 +10,7 @@ containers:
     image: linuxserver/transmission:145
     user: media
     volumes:
-      - source: "{{ docker_dir }}/transmission/config"
+      - source: transmission-config
         dest: /config
       - source: downloads
         dest: /downloads
@@ -33,7 +24,7 @@ containers:
     image: linuxserver/radarr:134
     user: media
     volumes:
-      - source: "{{ docker_dir }}/radarr/config"
+      - source: radarr-config
         dest: /config
       - source: downloads
         dest: /downloads

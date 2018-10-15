@@ -1,4 +1,6 @@
 ---
+timezone: Atlanta/America
+
 build_type: dev
 vagrant_root: /vagrant
 build_dir: "{{ vagrant_root }}/build"

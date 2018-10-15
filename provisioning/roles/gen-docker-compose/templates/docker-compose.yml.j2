@@ -43,13 +43,7 @@ services:
 {% endfor %}
     volumes:
 {% for vol in ct.volumes %}
-{% if vol.source is in(volumes|selectattr("type", "equalto", "mount-dir")|map(attribute="name")) %}
-      - {{ mount_dir }}/{{ vol.source }}:{{ vol.dest }}:shared
-{# TODO: add bind mount discovery here #}
-{% else %}
-      # - {{vol.source }}:{{ vol.dest }}:nocopy
-      - {{vol.source }}:{{ vol.dest }}
-{% endif %}
+      - {{ volumes|volume_source(vol.source, mount_dir) }}:{{ vol.dest }}
 {% endfor %}
     ports:
 {% for port in ct.ports %}

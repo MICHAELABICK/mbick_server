@@ -12,11 +12,7 @@
         state: present
   roles:
     - { role: "nickjj.docker", tags: ["docker"] }
-  handlers:
-    - name: Run docker-compose
-      shell: docker-compose up -d
-      args:
-        chdir: "{{ build_dir }}"
+    - gen-docker-compose
 
   tasks:
     - name: Install docker module
@@ -66,13 +62,6 @@
         append: yes
       loop: "{{ ct_users }}"
 
-    - name: Create build directory
-      file:
-        path: "{{ build_dir }}"
-        state: directory
-      tags:
-        - mbick-docker
-
     # - name: Copy source files to build directory
     #   synchronize:
     #     src: ../src/
@@ -80,11 +69,7 @@
     #     recursive: yes
     #     delete: yes
 
-    - name: Build docker-compose.yml
-      template:
-        src: "{{ src_dir }}/docker-compose.yml.j2"
-        dest: "{{ build_dir }}/docker-compose.yml"
-      notify:
-        - "Run docker-compose"
-      tags:
-        - mbick-docker
+    - name: Run docker-compose
+      shell: docker-compose up -d
+      args:
+        chdir: "{{ build_dir }}"

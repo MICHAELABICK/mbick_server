@@ -96,6 +96,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "ansible" do |ansible|
     ansible.verbose = "v"
+    # ansible.config_file = "provisioning/ansible.cfg"
     ansible.playbook = "provisioning/provision.yml"
     ansible.groups = {
       "dev-hosts" => ["dev-docker"],
