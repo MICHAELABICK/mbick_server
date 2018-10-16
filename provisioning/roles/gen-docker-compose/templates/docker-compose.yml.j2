@@ -14,8 +14,8 @@ services:
     environment:
       - RCLONE_REMOTE_MOUNT={{ rclone_dir }}/{{ vol.name }}
       - RCLONE_MOUNT_OPTIONS={{ rclone_mount_options }}
-      - PUID={{ (ct_users|selectattr("name", "equalto", vol.owner)|first).id }}
-      - PGID={{ (ct_users|selectattr("name", "equalto", vol.owner)|first).id }}
+      - PUID={{ (ct_users|user(vol.owner)).id }}
+      - PGID={{ (ct_users|user(vol.owner)).id }}
     cap_add:
       - SYS_ADMIN
     devices:
@@ -30,8 +30,8 @@ services:
   {{ ct.name }}:
     image: {{ ct.image }}
     environment:
-      - PUID={{ (ct_users|selectattr("name", "equalto", ct.user )|first).id }}
-      - PGID={{ (ct_users|selectattr("name", "equalto", ct.user )|first).id }}
+      - PUID={{ (ct_users|user(ct.user)).id }}
+      - PGID={{ (ct_users|user(ct.user)).id }}
       - TZ={{ timezone }}
 {% if ct.volumes|map(attribute="source")|intersect(volumes|selectattr("type", "equalto", "rclone")|map(attribute="name")) %}
     depends_on:
