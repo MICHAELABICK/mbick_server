@@ -20,18 +20,26 @@ containers:
       - 9091:9091
       - 51413:51413
       - 51413:51413/udp
-  - name: radarr
-    image: linuxserver/radarr:134
+  # - name: radarr
+  #   image: linuxserver/radarr:134
+  #   user: media
+  #   volumes:
+  #     - source: radarr-config
+  #       dest: /config
+  #     - source: downloads
+  #       dest: /downloads
+  #     - source: movies
+  #       dest: /movies
+  #   ports:
+  #     - 7878:7878
+  - name: jackett
+    image: linuxserver/jackett
     user: media
     volumes:
-      - source: radarr-config
+      - source: jackett-config
         dest: /config
-      - source: downloads
-        dest: /downloads
-      - source: movies
-        dest: /movies
     ports:
-      - 7878:7878
+      - 9117:9117
 
 mount_dir: /mnt/volumes
 rclone_dir: gt-onedrive:/mbick-server
@@ -45,7 +53,7 @@ volumes:
   #   owner: media
   #   encrypt: yes
   - name: downloads
-    type: mount-dir
+    type: local
     owner: media
   - name: transmission-watch
     type: local
@@ -55,12 +63,18 @@ volumes:
     source: "{{ docker_dir }}/transmission/config"
     owner: media
   - name: radarr-config
-    type: local
-    source: "{{ docker_dir }}/radarr/config"
+    type: rclone
+    # type: bind
+    # source: "{{ docker_dir }}/radarr/config"
     owner: media
   # - name: sonarr-config
   #   type: bind
   #   owner: media
+  - name: jackett-config
+    type: rclone
+    # type: bind
+    # source: "{{ docker_dir }}/jackett/config"
+    owner: media
 
 rclone_mount_options: --allow-non-empty
 

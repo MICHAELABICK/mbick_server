@@ -4,7 +4,10 @@ tags
 
 # Make sure not to save configs
 *.conf
+*config*
 
 *.log
 *.retry
 *.swp
+
+src/transmission/config/settings.json
