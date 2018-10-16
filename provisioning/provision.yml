@@ -40,10 +40,10 @@
         state: present
       loop: "{{ ct_users }}"
 
-    - name: Create mount directory
-      file:
-        path: "{{ mount_dir }}"
-        state: directory
+    # - name: Create mount directory
+    #   file:
+    #     path: "{{ mount_dir }}"
+    #     state: directory
 
     - name: Create mountpoints for containers
       file:
@@ -52,7 +52,7 @@
         group: "{{ item.owner }}"
         state: directory
         mode: 0775
-      loop: "{{ volumes|mount_dir_volumes }}"
+      loop: "{{ volumes|selectattr('type', 'equalto', 'mount-dir')|list }}"
 
     - name: Add Vagrant user to all container groups
       user:
