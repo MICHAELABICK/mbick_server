@@ -1,0 +1,51 @@
+---
+- hosts: proxmox
+  # remote_user: root
+
+  pre_tasks:
+    - name: APT update
+      apt:
+        update_cache: yes
+
+    # - name: switch to community repos
+    #   apt_repository:
+    #     repo: deb https://enterprise.proxmox.com/debian/pve stretch pve-enterprise
+    #     state: absent
+
+    # - name: stuff
+    #   apt_repository:
+    #     repo: deb http://download.proxmox.com/debian/pve stretch pve-no-subscription
+    #     state: present
+
+    # - name: Update all packages to the latest version
+    #   apt:
+    #     upgrade: dist
+
+    - name: Install pip
+      apt:
+        name: python-pip
+        state: present
+
+    - name: Install requests
+      pip:
+        name: requests
+        state: latest
+
+    - name: Install proxmoxer
+      pip:
+        name: proxmoxer
+        state: latest
+
+  roles:
+    - create_vms
+
+
+- hosts: docker-hosts
+  remote_user: "{{ default_user }}"
+  become: yes
+  # vars:
+  #   ansible_ssh_user:             "{{ default_user }}"
+  #   ansible_ssh_password:         "{{ default_password }}"
+  #   ansible_ssh_private_key_file: none
+  roles:
+    - manage_users

@@ -1,0 +1,16 @@
+hypervisors:
+  - name: node1
+    os: proxmox
+    location: lax
+    vms:
+      - name: nas01
+        os: freenas
+      - name: pihole01
+    docker-hosts:
+      - name: docker01
+        os: ubuntu
+        groups:
+          - docker-hosts
+        docker-cts:
+          - duckdns
+    lxc-cts:

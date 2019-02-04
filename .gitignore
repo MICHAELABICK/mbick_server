@@ -2,12 +2,12 @@ tags
 /build*
 /.vagrant
 
+# Make sure not to save ssh keys
+/ssh*
+
 # Make sure not to save configs
 *.conf
-*config*
 
 *.log
 *.retry
 *.swp
-
-src/transmission/config/settings.json
