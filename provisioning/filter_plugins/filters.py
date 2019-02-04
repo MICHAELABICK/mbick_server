@@ -10,11 +10,11 @@ def dict_with_keyval(dicts, key, value, dict_type = "dict"):
 class FilterModule(object):
     def filters(self):
         return {
-            'user': self.user,
-            'named_volumes': self.named_volumes,
-            'volume': self.volume,
-            'volume_source': self.volume_source
-        }
+                'user': self.user,
+                'named_volumes': self.named_volumes,
+                'volume': self.volume,
+                'volume_source': self.volume_source
+            }
 
     def user(self, users, name):
         return dict_with_keyval(users, "name", name, "user")

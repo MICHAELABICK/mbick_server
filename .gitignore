@@ -2,6 +2,9 @@ tags
 /build*
 /.vagrant
 
+# Make sure not to save ssh keys
+/ssh*
+
 # Make sure not to save configs
 *.conf
 

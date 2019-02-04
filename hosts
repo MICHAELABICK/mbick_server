@@ -1,0 +1,26 @@
+# [all:vars]
+# ansible_ssh_private_key_file=~/.ssh/id_rsa.pem
+# ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+# Hardware
+[hypervisors]
+node1 ansible_host=192.168.1.101 ansible_user=root
+
+
+# OSes
+[proxmox]
+node1
+
+[freenas]
+nas ansible_host=192.168.1.111
+
+[ubuntu]
+
+# Locations
+[los-angeles]
+node01
+nas
+
+
+[python3:children]
+ubuntu

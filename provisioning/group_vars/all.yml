@@ -1,4 +1,35 @@
 ---
+# Role Variables: create_vms
+ssh_keys_dir: ../ssh
+ssh_users:
+  - name: mbick
+    id:   1000
+
+ssh_user:     mbick
+api_user:     ansible@pve
+api_password: password # TODO: encrypt this
+api_host:     node1
+location:     los-angeles
+
+# Assumes that we are creating a vm from a template, that has cloud-init
+# functionality
+gateway:  192.168.1.1
+vms:
+  - name:     docker01
+    vmid:     110
+    node:     node1
+    template: ubuntu-bionic
+    memory:   2048
+    sockets:  1
+    cores:    1
+    # TODO: pull automatically from the hosts file and enable DHCP functionality
+    ip:       192.168.1.120
+    groups:
+      - docker-hosts
+      - ubuntu
+
+
+# Role Variables: gen_docker_compose
 docker_compose_file_version: 3.7
 src_dir: ../src # on the local machine
 

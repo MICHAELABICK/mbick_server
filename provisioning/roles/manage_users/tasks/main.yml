@@ -1,0 +1,35 @@
+# based on https://www.reddit.com/r/homelab/comments/78zhkr/what_are_you_using_for_user_management_for_home/doyda6e
+
+# 'sudo' group creation is based on this: https://stackoverflow.com/questions/33359404/ansible-best-practice-for-maintaining-list-of-sudoers
+# however it is irrelevant for ubuntu
+  # - name: Make sure we have a 'sudo' group
+  #   group:
+  #     name: sudo
+  #     state: present
+
+  # - name: Allow 'sudo' group to have passwordless sudo
+  #   lineinfile:
+  #     dest: /etc/sudoers
+  #     state: present
+  #     regexp: '^%sudo'
+  #     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+  #     validate: visudo -cf %s
+
+- name: Create SSH users
+  user:
+    group: sudo
+    name: "{{ item.name }}"
+    uid: "{{ item.id }}"
+  with_items: "{{ ssh_users }}"
+
+- name: Copy public SSH keys of allowed users
+  authorized_key:
+    user: "{{ item.name }}"
+    state: present
+    key: "{{ lookup('file', '{{ ssh_keys_dir }}/{{ item.name }}.pub') }}"
+  with_items: "{{ ssh_users }}"
+
+- name: Restart sshd
+  service:
+    name: sshd
+    state: restarted
