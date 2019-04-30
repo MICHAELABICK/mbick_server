@@ -1,0 +1,16 @@
+- name: Commenting out enterprise repository
+  replace:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    regexp: '(^[^#].*)'
+    replace: '# \1'
+
+- name: Copy no subscription repository
+  synchronize:
+    src: ./templates/pve-no-subscription.list
+    dest: /etc/apt/sources.list.d/
+
+# - name: Update repositories cache and install packages
+#   apt:
+#     name:
+#       - proxmox-ve
+#     update_cache: yes

@@ -1,0 +1,6 @@
+version: "3.7"
+services:
+  build:
+    build: .
+    volumes:
+      - ./:/tmp/host
