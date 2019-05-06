@@ -1,4 +1,3 @@
-build:
-	docker-compose build build
-	docker-compose run --rm build
-	packer build ubuntu-bionic.json
+images:
+	docker-compose build packer
+	docker-compose run --rm packer build ubuntu-bionic.json

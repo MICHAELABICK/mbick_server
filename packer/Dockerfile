@@ -1,6 +1,8 @@
-FROM ubuntu:18.04
-RUN apt-get update && apt-get install -y \
-    cloud-utils \
-    && rm -rf /var/lib/apt/lists/*
+FROM hashicorp/packer:light
+ARG TEMPLATE_DIR
+ENV TEMPLATES=$TEMPLATE_DIR
 
-CMD ["cloud-localds", "/tmp/host/cloud.img", "/tmp/host/cloud.cfg"]
+RUN apk add --update qemu qemu-system-x86_64 qemu-img
+
+RUN mkdir -p $TEMPLATES
+WORKDIR $TEMPLATES

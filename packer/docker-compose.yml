@@ -1,6 +1,14 @@
 version: "3.7"
 services:
-  build:
-    build: .
+  packer:
+    build:
+      context: .
+      args:
+        TEMPLATE_DIR: "${TEMPLATE_DIR}"
+    environment:
+      - BUILD_DIR
+      - PACKER_LOG
     volumes:
-      - ./:/tmp/host
+      - "./templates/:${TEMPLATE_DIR}"
+      - "./build/:${BUILD_DIR}"
+    privileged: true

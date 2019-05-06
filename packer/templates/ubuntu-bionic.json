@@ -1,0 +1,34 @@
+{
+  "variables": {
+    "build_dir": "{{env `BUILD_DIR`}}"
+  },
+  "builders":
+    [
+      {
+  "type": "qemu",
+  "iso_url": "https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img",
+  "iso_checksum": "dc79e5634a6e3c4c58b890801a8e801b4d47a190e0b3d0d185b26a942a2b52ee",
+  "iso_checksum_type": "sha256",
+  "disk_image": true,
+  "output_directory": "{{user `build_dir`}}",
+  "disk_size": 5000,
+  "format": "qcow2",
+  "disk_compression": true,
+  "headless": true,
+  "accelerator": "none",
+  "ssh_username": "ubuntu",
+  "ssh_password": "ubuntu",
+  "ssh_port": 22,
+  "ssh_wait_timeout": "300s",
+  "vm_name": "ubuntu",
+  "use_default_display": true,
+  "http_directory": "./seed",
+  "qemuargs": [
+          ["-smbios", "type=1,serial=ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/"],
+          ["-m", "512M"],
+          ["-smp", "1"],
+          ["-serial", "mon:stdio"]
+        ]
+      }
+    ]
+}
