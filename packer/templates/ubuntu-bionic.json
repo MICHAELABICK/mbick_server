@@ -10,7 +10,7 @@
   "iso_checksum": "dc79e5634a6e3c4c58b890801a8e801b4d47a190e0b3d0d185b26a942a2b52ee",
   "iso_checksum_type": "sha256",
   "disk_image": true,
-  "output_directory": "{{user `build_dir`}}",
+  "output_directory": "{{user `build_dir`}}/image",
   "disk_size": 5000,
   "format": "qcow2",
   "disk_compression": true,
@@ -20,7 +20,7 @@
   "ssh_password": "ubuntu",
   "ssh_port": 22,
   "ssh_wait_timeout": "300s",
-  "vm_name": "ubuntu",
+  "vm_name": "ci-ubuntu-bionic",
   "use_default_display": true,
   "http_directory": "./seed",
   "qemuargs": [
