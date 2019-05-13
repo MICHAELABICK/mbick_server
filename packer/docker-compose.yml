@@ -3,19 +3,19 @@ services:
   packer:
     image: hashicorp/packer:light
     environment:
-      - PROVISION_DIR
       - PACKER_LOG
     volumes:
       - "./templates/:${TEMPLATE_DIR}"
-      - "../provisioning/:${PROVISION_DIR}"
     working_dir: "${TEMPLATE_DIR}"
 
   packer-master:
     build: ./packer-master
     environment:
+      - PROVISION_DIR
       - PACKER_LOG
     volumes:
       - "./templates/:${TEMPLATE_DIR}"
+      - "../provisioning/:${PROVISION_DIR}"
     working_dir: "${TEMPLATE_DIR}"
 
   packer-qemu:

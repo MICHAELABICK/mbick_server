@@ -1,0 +1,103 @@
+{
+  "variables": {
+    "provision_dir": "{{env `PROVISION_DIR`}}",
+    "proxmox_api_user": "packer@pve",
+    "proxmox_api_password": "supersecret",
+
+    "ssh_fullname": "packer",
+    "ssh_password": "packer",
+    "ssh_username": "packer",
+
+    "name": "ci-ubuntu-bionic",
+    "boot_command_prefix": "<esc><esc><enter><wait>",
+    "locale": "en_US"
+  },
+  "builders": [
+    {
+      "type": "proxmox",
+      "proxmox_url": "https://192.168.11.101:8006/api2/json",
+      "insecure_skip_tls_verify": true,
+      "username": "{{user `proxmox_api_user`}}",
+      "password": "{{user `proxmox_api_password`}}",
+
+      "vm_name": "{{user `name`}}",
+      "vm_id": 9100,
+      "node": "node1",
+      "memory": 1024,
+      "sockets": 1,
+      "cores": 1,
+      "os": "l26",
+      "network_adapters": [
+        {
+          "model": "virtio",
+          "bridge": "vmbr0"
+        }
+      ],
+      "disks": [
+        {
+          "type": "scsi",
+          "disk_size": "20G",
+          "storage_pool": "local-zfs",
+          "storage_pool_type": "zfspool",
+          "format": "raw"
+        }
+      ],
+      "qemu_agent": true,
+
+      "iso_file": "vm-isos:iso/ubuntu-18.04.2-server-amd64.iso",
+      "http_directory":"http",
+      "boot_wait": "10s",
+      "boot_command": [
+        "{{ user `boot_command_prefix` }}",
+        "/install/vmlinuz ",
+        "auto ",
+        "console-setup/ask_detect=false ",
+        "debconf/frontend=noninteractive ",
+        "debian-installer={{ user `locale` }} ",
+        "hostname={{ user `name` }} ",
+        "fb=false ",
+        "grub-installer/bootdev=/dev/sda<wait> ",
+        "initrd=/install/initrd.gz ",
+        "kbd-chooser/method=us ",
+        "keyboard-configuration/modelcode=SKIP ",
+        "keyboard-configuration/layout=USA ",
+        "keyboard-configuration/variant=USA ",
+        "locale={{ user `locale` }} ",
+        "noapic ",
+        "passwd/user-fullname={{ user `ssh_fullname` }} ",
+        "passwd/user-password={{ user `ssh_password` }} ",
+        "passwd/user-password-again={{ user `ssh_password` }} ",
+        "passwd/username={{ user `ssh_username` }} ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+        "-- <enter>"
+      ],
+
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_timeout": "15m",
+      "ssh_username": "{{ user `ssh_username` }}",
+
+      "unmount_iso": true,
+      "template_description": "Ubuntu 18.04.02, generated on {{ isotime \"2006-01-02T15:04:05Z\" }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "environment_vars": [
+        "SSH_USERNAME={{user `ssh_username`}}",
+        "SSH_PASSWORD={{user `ssh_password`}}"
+      ],
+      "execute_command": "echo '{{ user `ssh_password` }}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts": [
+        "scripts/ansible.sh"
+      ]
+    },
+    {
+      "playbook_file": "{{user `provision_dir`}}/packer.yml",
+      "type": "ansible",
+      "groups": [
+        "vms"
+      ]
+    }
+  ]
+}

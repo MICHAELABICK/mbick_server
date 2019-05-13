@@ -16,6 +16,13 @@ RUN go build -o /bin/packer github.com/hashicorp/packer
 
 WORKDIR $GOPATH
 
-FROM alpine:latest
+
+FROM alpine as packer
 COPY --from=builder /bin/packer /bin
+
+
+FROM williamyeh/ansible:alpine3-onbuild as ansible
+
+
+FROM packer
 ENTRYPOINT ["/bin/packer"]

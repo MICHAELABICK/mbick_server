@@ -3,3 +3,13 @@
   roles:
     - { role: pve-repos, become: yes }
     - { role: geerlingguy.ansible-role-packer, become: yes }
+
+tasks:
+  - name: Update apt cache
+    apt:
+      update_cache: yes
+
+  - name: Install cloud-init
+    apt:
+      name: cloud-init
+      state: present
