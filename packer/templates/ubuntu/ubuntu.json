@@ -8,7 +8,7 @@
     "ssh_password": "packer",
     "ssh_username": "packer",
 
-    "name": "ci-ubuntu-bionic",
+    "hostname": "ci-ubuntu-bionic",
     "boot_command_prefix": "<esc><esc><enter><wait>",
     "locale": "en_US"
   },
@@ -20,7 +20,7 @@
       "username": "{{user `proxmox_api_user`}}",
       "password": "{{user `proxmox_api_password`}}",
 
-      "vm_name": "{{user `name`}}",
+      "vm_name": "{{user `hostname`}}",
       "vm_id": 9100,
       "node": "node1",
       "memory": 1024,
@@ -45,7 +45,7 @@
       "qemu_agent": true,
 
       "iso_file": "vm-isos:iso/ubuntu-18.04.2-server-amd64.iso",
-      "http_directory":"http",
+      "http_directory":"{{template_dir}}/http",
       "boot_wait": "10s",
       "boot_command": [
         "{{ user `boot_command_prefix` }}",
@@ -54,7 +54,7 @@
         "console-setup/ask_detect=false ",
         "debconf/frontend=noninteractive ",
         "debian-installer={{ user `locale` }} ",
-        "hostname={{ user `name` }} ",
+        "hostname={{ user `hostname` }} ",
         "fb=false ",
         "grub-installer/bootdev=/dev/sda<wait> ",
         "initrd=/install/initrd.gz ",
@@ -82,19 +82,9 @@
   ],
   "provisioners": [
     {
-      "type": "shell",
-      "environment_vars": [
-        "SSH_USERNAME={{user `ssh_username`}}",
-        "SSH_PASSWORD={{user `ssh_password`}}"
-      ],
-      "execute_command": "echo '{{ user `ssh_password` }}' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
-      "scripts": [
-        "scripts/ansible.sh"
-      ]
-    },
-    {
-      "playbook_file": "{{user `provision_dir`}}/packer.yml",
+      "pause_before": "5s",
       "type": "ansible",
+      "playbook_file": "{{user `provision_dir`}}/packer.yml",
       "groups": [
         "vms"
       ]

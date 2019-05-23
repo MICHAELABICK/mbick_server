@@ -1,13 +1,31 @@
-FROM hashicorp/packer:light as packer
+FROM golang:alpine as builder
 
-FROM packer as packer-qemu
-ARG TEMPLATE_DIR
-ENV TEMPLATES=$TEMPLATE_DIR
+ENV PACKER_DEV=1
 
-RUN apk add --update qemu qemu-system-x86_64 qemu-img
+RUN apk add --update git bash openssl
+# RUN go get github.com/mitchellh/gox
 
-FROM pve-template-upload
-RUN mkdir -p $TEMPLATES
-WORKDIR $TEMPLATES
+ENV PACKER_WS=/packer_ws
+RUN mkdir $PACKER_WS
+WORKDIR $PACKER_WS
+
+RUN go mod init . \
+    && go get -d github.com/hashicorp/packer@master
+
+RUN go build -o /bin/packer github.com/hashicorp/packer
+
+WORKDIR $GOPATH
 
 
+FROM alpine as packer
+COPY --from=builder /bin/packer /bin
+
+
+FROM williamyeh/ansible:alpine3-onbuild as ansible
+
+
+FROM ansible as packer-ansible
+COPY --from=packer /bin/packer /bin
+ENTRYPOINT ["/bin/packer"]
+
+FROM packer-ansible

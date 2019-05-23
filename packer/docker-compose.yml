@@ -2,14 +2,8 @@ version: "3.7"
 services:
   packer:
     image: hashicorp/packer:light
-    environment:
-      - PACKER_LOG
-    volumes:
-      - "./templates/:${TEMPLATE_DIR}"
-    working_dir: "${TEMPLATE_DIR}"
-
-  packer-master:
-    build: ./packer-master
+    networks:
+      - macvlan
     environment:
       - PROVISION_DIR
       - PACKER_LOG
@@ -18,15 +12,25 @@ services:
       - "../provisioning/:${PROVISION_DIR}"
     working_dir: "${TEMPLATE_DIR}"
 
-  packer-qemu:
-    build:
-      context: .
-      args:
-        TEMPLATE_DIR: "${TEMPLATE_DIR}"
+  packer-master:
+    build: .
+    networks:
+      - macvlan
     environment:
-      - BUILD_DIR
+      - PROVISION_DIR
       - PACKER_LOG
     volumes:
       - "./templates/:${TEMPLATE_DIR}"
-      - "./build/:${BUILD_DIR}"
-    privileged: true
+      - "../provisioning/:${PROVISION_DIR}"
+    # working_dir: "${TEMPLATE_DIR}"
+    working_dir: "${TEMPLATE_DIR}/ubuntu"
+
+networks:
+  macvlan:
+    driver: macvlan
+    driver_opts:
+      parent: en0.30
+    ipam:
+      config:
+        - subnet: 192.168.11.0/24
+        # - gateway: 192.168.11.1
