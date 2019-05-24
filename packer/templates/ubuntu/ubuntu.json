@@ -1,8 +1,12 @@
 {
   "variables": {
-    "provision_dir": "{{env `PROVISION_DIR`}}",
+    "provision_dir": null,
+    "host_ip": null,
+
     "proxmox_api_user": "packer@pve",
     "proxmox_api_password": "supersecret",
+
+    "ubuntu_release": "bionic",
 
     "ssh_fullname": "packer",
     "ssh_password": "packer",
@@ -68,7 +72,7 @@
         "passwd/user-password={{ user `ssh_password` }} ",
         "passwd/user-password-again={{ user `ssh_password` }} ",
         "passwd/username={{ user `ssh_username` }} ",
-        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+        "preseed/url=http://{{user `host_ip`}}:{{ .HTTPPort }}/preseed.cfg ",
         "-- <enter>"
       ],
 
@@ -85,8 +89,10 @@
       "pause_before": "5s",
       "type": "ansible",
       "playbook_file": "{{user `provision_dir`}}/packer.yml",
+      "inventory_file": "{{user `provision_dir`}}/inventory",
       "groups": [
-        "vms"
+        "vms",
+        "ubuntu-{{user `ubuntu_release`}}"
       ]
     }
   ]

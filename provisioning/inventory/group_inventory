@@ -1,0 +1,27 @@
+# OS Distributions
+[proxmox]
+
+[freenas]
+
+[ubuntu-bionic]
+
+
+# Machine Types
+[hypervisors]
+
+[vms]
+
+
+# Locations
+[los-angeles]
+
+
+# Group Hierarchy
+[ubuntu:children]
+ubuntu-python3
+
+[ubuntu-python3:children]
+ubuntu-bionic
+
+[python3:children]
+ubuntu-python3
