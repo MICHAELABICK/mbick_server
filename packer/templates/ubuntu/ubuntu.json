@@ -1,18 +1,30 @@
 {
   "variables": {
     "provision_dir": null,
-    "host_ip": null,
+    "http_directory": "{{template_dir}}/http",
+    "preseed": "preseed.cfg",
+    "proxmox_host_ip": null,
 
     "proxmox_api_user": "packer@pve",
     "proxmox_api_password": "supersecret",
 
     "ubuntu_release": "bionic",
+    "virtualbox_guest_os_type": "Ubuntu_64",
+    "proxmox_iso_file": "vm-isos:iso/ubuntu-18.04.2-server-amd64.iso",
+    "iso_url": "http://cdimage.ubuntu.com/releases/18.04/release/ubuntu-18.04.2-server-amd64.iso",
+    "iso_checksum": "34416ff83179728d54583bf3f18d42d2",
+    "iso_checksum_type": "md5",
+
+    "cpus": "1",
+    "cores": "1",
+    "memory": "1024",
+    "disk_size_MB": "20000",
 
     "ssh_fullname": "packer",
     "ssh_password": "packer",
     "ssh_username": "packer",
 
-    "hostname": "ci-ubuntu-bionic",
+    "hostname": "ci-ubuntu-{{user `ubuntu_release`}}",
     "boot_command_prefix": "<esc><esc><enter><wait>",
     "locale": "en_US"
   },
@@ -27,9 +39,9 @@
       "vm_name": "{{user `hostname`}}",
       "vm_id": 9100,
       "node": "node1",
-      "memory": 1024,
-      "sockets": 1,
-      "cores": 1,
+      "sockets": "{{user `cpus`}}",
+      "cores": "{{user `cores`}}",
+      "memory": "{{user `memory`}}",
       "os": "l26",
       "network_adapters": [
         {
@@ -40,7 +52,7 @@
       "disks": [
         {
           "type": "scsi",
-          "disk_size": "20G",
+          "disk_size": "{{user `disk_size_MB`}}M",
           "storage_pool": "local-zfs",
           "storage_pool_type": "zfspool",
           "format": "raw"
@@ -48,8 +60,8 @@
       ],
       "qemu_agent": true,
 
-      "iso_file": "vm-isos:iso/ubuntu-18.04.2-server-amd64.iso",
-      "http_directory":"{{template_dir}}/http",
+      "iso_file": "{{user `proxmox_iso_file`}}",
+      "http_directory":"{{user `http_directory`}}",
       "boot_wait": "10s",
       "boot_command": [
         "{{ user `boot_command_prefix` }}",
@@ -72,7 +84,7 @@
         "passwd/user-password={{ user `ssh_password` }} ",
         "passwd/user-password-again={{ user `ssh_password` }} ",
         "passwd/username={{ user `ssh_username` }} ",
-        "preseed/url=http://{{user `host_ip`}}:{{ .HTTPPort }}/preseed.cfg ",
+        "preseed/url=http://{{user `proxmox_host_ip`}}:{{ .HTTPPort }}/{{user `preseed`}} ",
         "-- <enter>"
       ],
 
@@ -82,6 +94,46 @@
 
       "unmount_iso": true,
       "template_description": "Ubuntu 18.04.02, generated on {{ isotime \"2006-01-02T15:04:05Z\" }}"
+    },
+    {
+      "type": "virtualbox-iso",
+
+      "memory": "{{user `memory`}}",
+      "disk_size": "{{user `disk_size_MB`}}",
+
+      "guest_os_type": "{{user `virtualbox_guest_os_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "http_directory":"{{user `http_directory`}}",
+      "boot_command": [
+        "{{ user `boot_command_prefix` }}",
+        "/install/vmlinuz ",
+        "auto ",
+        "console-setup/ask_detect=false ",
+        "debconf/frontend=noninteractive ",
+        "debian-installer={{ user `locale` }} ",
+        "hostname={{ user `hostname` }} ",
+        "fb=false ",
+        "grub-installer/bootdev=/dev/sda<wait> ",
+        "initrd=/install/initrd.gz ",
+        "kbd-chooser/method=us ",
+        "keyboard-configuration/modelcode=SKIP ",
+        "keyboard-configuration/layout=USA ",
+        "keyboard-configuration/variant=USA ",
+        "locale={{ user `locale` }} ",
+        "noapic ",
+        "passwd/user-fullname={{ user `ssh_fullname` }} ",
+        "passwd/user-password={{ user `ssh_password` }} ",
+        "passwd/user-password-again={{ user `ssh_password` }} ",
+        "passwd/username={{ user `ssh_username` }} ",
+      "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `preseed`}} ",
+        "-- <enter>"
+      ],
+      "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
+
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_username": "{{ user `ssh_username` }}"
     }
   ],
   "provisioners": [
