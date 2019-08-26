@@ -14,6 +14,7 @@ new-proxmox-images: build
 	packer build \
 		-var-file=defaults.json \
 		-var 'proxmox_host_ip=${proxmox_host_ip}' \
+		$(PACKER_EXTRA_ARGS) \
 		$(BUILD_DIR)/ubuntu/ubuntu.json
 proxmox-images:
 	$(eval SERVICE := packer-master)

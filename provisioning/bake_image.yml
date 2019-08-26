@@ -1,0 +1,45 @@
+---
+# - hosts: vms
+#   vars:
+#     provision_group: provision
+#     provision_user: packer
+#   tasks:
+    # - name: Make sure we have a provisioning group
+    #   group:
+    #     name: "{{ provision_group }}"
+    #     state: present
+
+    # - name: Allow provisioners to have passwordless sudo
+    #   lineinfile:
+    #     dest: /etc/sudoers
+    #     state: present
+    #     regexp: '^%sudo'
+    #     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    #     validate: visudo -cf %s
+
+- hosts: vms
+  roles:
+    # - oefenweb.sudoers
+    - andrewrothstein.sudoers
+
+  tasks:
+    - name: Apt update
+      become: yes
+      apt:
+        update_cache: yes
+
+- hosts: cloud-init
+  become: yes
+  tasks:
+    - name: Install cloud-init
+      apt:
+        name: cloud-init
+        state: present
+
+- hosts: proxmox-vm
+  become: yes
+  tasks:
+    - name: Install qemu-guest-agent
+      apt:
+        name: qemu-guest-agent
+        state: present

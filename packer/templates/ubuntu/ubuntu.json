@@ -1,6 +1,7 @@
 {
   "variables": {
     "provision_dir": null,
+    "inventory_dir": "{{user `provision_dir`}}/inventory",
     "http_directory": "{{template_dir}}/http",
     "preseed": "preseed.cfg",
     "proxmox_host_ip": null,
@@ -20,12 +21,34 @@
     "memory": "1024",
     "disk_size_MB": "20000",
 
-    "ssh_fullname": "packer",
-    "ssh_password": "packer",
-    "ssh_username": "packer",
+    "ssh_fullname": "vagrant",
+    "ssh_password": "vagrant",
+    "ssh_username": "vagrant",
 
-    "hostname": "ci-ubuntu-{{user `ubuntu_release`}}",
+    "vm_name": "ubuntu-{{user `ubuntu_release`}}",
+    "hostname": "{{user `vm_name`}}",
     "boot_command_prefix": "<esc><esc><enter><wait>",
+    "boot_command_suffix": [
+      "auto ",
+      "console-setup/ask_detect=false ",
+      "debconf/frontend=noninteractive ",
+      "debian-installer={{ user `locale` }} ",
+      "hostname={{ user `hostname` }} ",
+      "fb=false ",
+      "grub-installer/bootdev=/dev/sda<wait> ",
+      "initrd=/install/initrd.gz ",
+      "kbd-chooser/method=us ",
+      "keyboard-configuration/modelcode=SKIP ",
+      "keyboard-configuration/layout=USA ",
+      "keyboard-configuration/variant=USA ",
+      "locale={{ user `locale` }} ",
+      "noapic ",
+      "passwd/user-fullname={{ user `ssh_fullname` }} ",
+      "passwd/user-password={{ user `ssh_password` }} ",
+      "passwd/user-password-again={{ user `ssh_password` }} ",
+      "passwd/username={{ user `ssh_username` }} ",
+      "-- <enter>"
+    ],
     "locale": "en_US"
   },
   "builders": [
@@ -36,7 +59,7 @@
       "username": "{{user `proxmox_api_user`}}",
       "password": "{{user `proxmox_api_password`}}",
 
-      "vm_name": "{{user `hostname`}}",
+      "vm_name": "{{user `vm_name`}}",
       "vm_id": 9100,
       "node": "node1",
       "sockets": "{{user `cpus`}}",
@@ -66,26 +89,8 @@
       "boot_command": [
         "{{ user `boot_command_prefix` }}",
         "/install/vmlinuz ",
-        "auto ",
-        "console-setup/ask_detect=false ",
-        "debconf/frontend=noninteractive ",
-        "debian-installer={{ user `locale` }} ",
-        "hostname={{ user `hostname` }} ",
-        "fb=false ",
-        "grub-installer/bootdev=/dev/sda<wait> ",
-        "initrd=/install/initrd.gz ",
-        "kbd-chooser/method=us ",
-        "keyboard-configuration/modelcode=SKIP ",
-        "keyboard-configuration/layout=USA ",
-        "keyboard-configuration/variant=USA ",
-        "locale={{ user `locale` }} ",
-        "noapic ",
-        "passwd/user-fullname={{ user `ssh_fullname` }} ",
-        "passwd/user-password={{ user `ssh_password` }} ",
-        "passwd/user-password-again={{ user `ssh_password` }} ",
-        "passwd/username={{ user `ssh_username` }} ",
         "preseed/url=http://{{user `proxmox_host_ip`}}:{{ .HTTPPort }}/{{user `preseed`}} ",
-        "-- <enter>"
+        "{{user `boot_command_suffix`}}"
       ],
 
       "ssh_password": "{{ user `ssh_password` }}",
@@ -97,6 +102,7 @@
     },
     {
       "type": "virtualbox-iso",
+      "output_directory": "output-{{ user `vm_name` }}-virtualbox-iso",
 
       "memory": "{{user `memory`}}",
       "disk_size": "{{user `disk_size_MB`}}",
@@ -109,30 +115,13 @@
       "boot_command": [
         "{{ user `boot_command_prefix` }}",
         "/install/vmlinuz ",
-        "auto ",
-        "console-setup/ask_detect=false ",
-        "debconf/frontend=noninteractive ",
-        "debian-installer={{ user `locale` }} ",
-        "hostname={{ user `hostname` }} ",
-        "fb=false ",
-        "grub-installer/bootdev=/dev/sda<wait> ",
-        "initrd=/install/initrd.gz ",
-        "kbd-chooser/method=us ",
-        "keyboard-configuration/modelcode=SKIP ",
-        "keyboard-configuration/layout=USA ",
-        "keyboard-configuration/variant=USA ",
-        "locale={{ user `locale` }} ",
-        "noapic ",
-        "passwd/user-fullname={{ user `ssh_fullname` }} ",
-        "passwd/user-password={{ user `ssh_password` }} ",
-        "passwd/user-password-again={{ user `ssh_password` }} ",
-        "passwd/username={{ user `ssh_username` }} ",
-      "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `preseed`}} ",
-        "-- <enter>"
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `preseed`}} ",
+        "{{user `boot_command_suffix`}}"
       ],
       "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
 
       "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_timeout": "15m",
       "ssh_username": "{{ user `ssh_username` }}"
     }
   ],
@@ -140,12 +129,23 @@
     {
       "pause_before": "5s",
       "type": "ansible",
-      "playbook_file": "{{user `provision_dir`}}/packer.yml",
-      "inventory_file": "{{user `provision_dir`}}/inventory",
+      "playbook_file": "{{user `provision_dir`}}/bake_image.yml",
+      "extra_arguments": [
+        "-i",
+        "{{user `inventory_dir`}}"
+      ],
       "groups": [
-        "vms",
+        "proxmox-vm",
         "ubuntu-{{user `ubuntu_release`}}"
-      ]
+      ],
+      "user": "{{user `ssh_username`}}"
+    }
+  ],
+  "post-processors": [
+    {
+      "keep_input_artifact": false,
+      "output": "box/{{.Provider}}/{{user `vm_name`}}.box",
+      "type": "vagrant"
     }
   ]
 }

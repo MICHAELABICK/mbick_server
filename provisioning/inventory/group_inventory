@@ -1,27 +1,37 @@
-# OS Distributions
+# Base Level Groups
+## OS Distributions
 [proxmox]
 
 [freenas]
 
 [ubuntu-bionic]
 
+## Machine Types
+[proxmox-vm]
 
-# Machine Types
-[hypervisors]
-
-[vms]
-
-
-# Locations
+## Locations
 [los-angeles]
 
 
 # Group Hierarchy
+## OS Groups
 [ubuntu:children]
 ubuntu-python3
 
 [ubuntu-python3:children]
 ubuntu-bionic
 
+## Machine Groups
+[vms:children]
+proxmox-vm
+
+## Software Groups
 [python3:children]
 ubuntu-python3
+
+[cloud-init:children]
+proxmox-vm
+
+# Variables
+[python3:vars]
+ansible_python_interpreter=/usr/bin/python3
