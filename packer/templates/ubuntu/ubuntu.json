@@ -6,6 +6,7 @@
     "preseed": "preseed.cfg",
     "proxmox_host_ip": null,
 
+    "proxmox_api_url": null,
     "proxmox_api_user": "packer@pve",
     "proxmox_api_password": "supersecret",
 
@@ -54,7 +55,7 @@
   "builders": [
     {
       "type": "proxmox",
-      "proxmox_url": "https://192.168.11.101:8006/api2/json",
+      "proxmox_url": "{{user `proxmox_api_url`}}",
       "insecure_skip_tls_verify": true,
       "username": "{{user `proxmox_api_user`}}",
       "password": "{{user `proxmox_api_password`}}",
@@ -79,7 +80,11 @@
           "storage_pool": "local-zfs",
           "storage_pool_type": "zfspool",
           "format": "raw"
-        }
+        },
+        {
+          "type": "ide",
+          "storage_pool": "local-zfs",
+          "storage_pool_type": "zfspool"
       ],
       "qemu_agent": true,
 

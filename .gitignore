@@ -13,6 +13,10 @@ packer_cache/
 /packer/output*/
 /packer/build/
 
+# do not save various terraform files
+.terraform
+*.tfstate
+
 *.pyc
 
 *.log

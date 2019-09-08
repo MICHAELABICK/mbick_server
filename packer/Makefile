@@ -1,3 +1,6 @@
+include ../common.env
+export
+
 BUILD_DIR := build
 TEMPLATE_DIR := templates
 
@@ -13,6 +16,7 @@ images: new-proxmox-images
 new-proxmox-images: build
 	packer build \
 		-var-file=defaults.json \
+		-var 'proxmox_api_url=${PROXMOX_API_URL}' \
 		-var 'proxmox_host_ip=${proxmox_host_ip}' \
 		$(PACKER_EXTRA_ARGS) \
 		$(BUILD_DIR)/ubuntu/ubuntu.json
@@ -24,6 +28,7 @@ build validate: $(templates_build) $(config_scripts_build)
 validate:
 	packer validate \
 		-var-file=defaults.json \
+		-var 'proxmox_api_url=${PROXMOX_API_URL}' \
 		-var 'proxmox_host_ip=${proxmox_host_ip}' \
 		$(BUILD_DIR)/ubuntu/ubuntu.json
 clean:
