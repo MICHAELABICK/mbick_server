@@ -1,28 +1,79 @@
 ---
-# - hosts: vms
-#   vars:
-#     provision_group: provision
-#     provision_user: packer
-#   tasks:
-    # - name: Make sure we have a provisioning group
-    #   group:
-    #     name: "{{ provision_group }}"
-    #     state: present
+- hosts: vms
+  vars:
+    provision_group: provision
+    provision_user: provision
+  tasks:
+    # - debug:
+    #     msg: ansible_user is {{ ansible_user }}
+
+    - name: Make sure we have a provisioning group
+      group:
+        name: "{{ provision_group }}"
+        state: present
+
+    - name: Allow provisioners to have passwordless sudo
+      become: yes
+      copy:
+        content: '%{{ provision_group }} ALL=(ALL) NOPASSWD: ALL'
+        dest: '/etc/sudoers.d/{{ provision_group }}'
+        mode: 0440
+        validate: visudo -cf %s
 
     # - name: Allow provisioners to have passwordless sudo
+    #   become: yes
     #   lineinfile:
     #     dest: /etc/sudoers
     #     state: present
-    #     regexp: '^%sudo'
-    #     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    #     regexp: '^%{{ provision_group }}'
+    #     line: '%{{ provision_group }} ALL=(ALL) NOPASSWD: ALL'
     #     validate: visudo -cf %s
 
-- hosts: vms
-  roles:
-    # - oefenweb.sudoers
-    - andrewrothstein.sudoers
+    - name: Add provisioning user to groups
+      become: yes
+      user:
+        append: yes
+        groups: "{{ provision_group }}"
+        name: "{{ provision_user }}"
+        state: present
 
-  tasks:
+    - name: Copy provisioning user SSH public key
+      become: yes
+      authorized_key:
+        user: "{{ provision_user }}"
+        state: present
+        key: "{{ lookup('file', '{{ ssh_keys_dir }}/default.pub') }}"
+
+    # - name: Do not allow password login
+    #   become: yes
+    #   lineinfile:
+    #     dest: /etc/ssh/sshd_config
+    #     regexp: "^PasswordAuthentication"
+    #     line: "PasswordAuthentication no"
+    #     state: present
+    #   # notify: Restart ssh
+
+    - name: Do not allow root login
+      become: yes
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "^PermitRootLogin"
+        line: "PermitRootLogin no"
+        state: present
+      # notify: Restart ssh
+
+    - name: Restart sshd
+      become: yes
+      service:
+        name: sshd
+        state: restarted
+
+# - hosts: vms
+#   roles:
+#     # - oefenweb.sudoers
+#     # - andrewrothstein.sudoers
+
+#   tasks:
     - name: Apt update
       become: yes
       apt:
@@ -39,7 +90,20 @@
 - hosts: proxmox-vm
   become: yes
   tasks:
+    # qemu-guest-agent has to be installed during preseed
+    # so that proxmox knows the IP address of the server,
+    # but we are checking that it is installed anyways
     - name: Install qemu-guest-agent
       apt:
         name: qemu-guest-agent
+        state: present
+
+- hosts: vagrant
+  tasks:
+    - name: Add vagrant user to groups
+      user:
+        # append: yes
+        group: "{{ provision_group }}"
+        name: "{{ provision_user }}"
+        password: vagrant
         state: present

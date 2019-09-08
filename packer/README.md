@@ -6,8 +6,16 @@ To build production templates, like Proxmox, run
 ```
 
 # Development
-It can be useful to develop packer images with virtualbox. To do this, build the images using the command
+It can be useful to debug packer runs after failure.
+To do this, use the command,
 
 ```sh
-    PACKER_EXTRA_ARGS='-only=virtualbox-iso' make images
+    PACKER_EXTRA_ARGS='-on-error=ask -except=virtualbox-iso' make images
+```
+
+Alternatively, packer can be run with virtualbox.
+To do this, build the images using the command,
+
+```sh
+    PACKER_EXTRA_ARGS='-on-error=ask -only=virtualbox-iso' make images
 ```

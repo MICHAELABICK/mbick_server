@@ -21,9 +21,9 @@
     "memory": "1024",
     "disk_size_MB": "20000",
 
-    "ssh_fullname": "vagrant",
-    "ssh_password": "vagrant",
-    "ssh_username": "vagrant",
+    "ssh_fullname": "provision",
+    "ssh_password": "provision",
+    "ssh_username": "provision",
 
     "vm_name": "ubuntu-{{user `ubuntu_release`}}",
     "hostname": "{{user `vm_name`}}",
@@ -132,7 +132,9 @@
       "playbook_file": "{{user `provision_dir`}}/bake_image.yml",
       "extra_arguments": [
         "-i",
-        "{{user `inventory_dir`}}"
+        "{{user `inventory_dir`}}",
+        "-e",
+        "ansible_become_password={{user `ssh_password`}}"
       ],
       "groups": [
         "proxmox-vm",
@@ -145,7 +147,8 @@
     {
       "keep_input_artifact": false,
       "output": "box/{{.Provider}}/{{user `vm_name`}}.box",
-      "type": "vagrant"
+      "type": "vagrant",
+      "only": ["virtualbox-iso"]
     }
   ]
 }
