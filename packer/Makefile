@@ -14,9 +14,10 @@ config_scripts_build := $(patsubst $(TEMPLATE_DIR)/%,$(BUILD_DIR)/%,$(config_scr
 
 images: new-proxmox-images
 new-proxmox-images: build
-	packer build \
+	PROXMOX_URL=${PROXMOX_API_URL} \
+		packer build \
 		-var-file=defaults.json \
-		-var 'proxmox_api_url=${PROXMOX_API_URL}' \
+		-var 'proxmox_api_ip=${PROXMOX_API_IP}' \
 		-var 'proxmox_host_ip=${proxmox_host_ip}' \
 		$(PACKER_EXTRA_ARGS) \
 		$(BUILD_DIR)/ubuntu/ubuntu.json
@@ -26,9 +27,10 @@ proxmox-images:
 	docker-compose run --rm $(SERVICE) build ubuntu.json
 build validate: $(templates_build) $(config_scripts_build)
 validate:
-	packer validate \
+	PROXMOX_URL=${PROXMOX_API_URL} \
+		packer validate \
 		-var-file=defaults.json \
-		-var 'proxmox_api_url=${PROXMOX_API_URL}' \
+		-var 'proxmox_api_ip=${PROXMOX_API_IP}' \
 		-var 'proxmox_host_ip=${proxmox_host_ip}' \
 		$(BUILD_DIR)/ubuntu/ubuntu.json
 clean:
