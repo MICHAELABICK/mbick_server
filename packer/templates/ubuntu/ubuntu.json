@@ -143,14 +143,17 @@
         "ubuntu-{{user `ubuntu_release`}}"
       ],
       "user": "{{user `ssh_username`}}"
-    },
-    {
-      "type": "shell-local",
-      "inline": ["{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_api_ip`}} {{user `vm_id`}}"],
-      "only": ["proxmox"]
     }
   ],
   "post-processors": [
+    {
+      "keep_input_artifact": true,
+      "type": "shell-local",
+      "inline": [
+          "{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_api_ip`}} {{user `vm_id`}}"
+      ],
+      "only": ["proxmox"]
+    },
     {
       "keep_input_artifact": false,
       "output": "box/{{.Provider}}/{{user `vm_name`}}.box",

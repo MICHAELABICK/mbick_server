@@ -6,17 +6,16 @@
 { error=$(qm set $1 --ide2 local-zfs:cloudinit 2>&1 1>&$out); } {out}>&1
 
 set -e
-if [ $? -eq 0 ]; then
-  if [[ $error == *"Configuration file"*"does not exist"* ]]; then
-      echo "vm with id $1 does not exist" 1>&2
-      exit 64
-  elif [[ $error == *"dataset already exists"* ]]; then
-      echo "cloud-init drive already created"
-  else
-      echo "unexpected error: $error" 1>&2
-      exit 1
-  fi
-else
+
+if [ -z "$error" ]; then
   qm set $1 --boot c --bootdisk scsi0
   qm set $1 --serial0 socket --vga serial0
+elif [[ $error == *"Configuration file"*"does not exist"* ]]; then
+  echo "vm with id $1 does not exist" 1>&2
+  exit 64
+elif [[ $error == *"dataset already exists"* ]]; then
+  echo "cloud-init drive already created"
+else
+  echo "unexpected error: $error" 1>&2
+  exit 1
 fi
