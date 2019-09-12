@@ -6,7 +6,7 @@
     "preseed": "preseed.cfg",
     "proxmox_host_ip": null,
 
-    "proxmox_api_url": null,
+    "proxmox_api_ip": null,
     "proxmox_api_user": "packer@pve",
     "proxmox_api_password": "supersecret",
 
@@ -18,7 +18,7 @@
     "iso_checksum_type": "md5",
 
     "cpus": "1",
-    "cores": "1",
+    "cores": "2",
     "memory": "1024",
     "disk_size_MB": "20000",
 
@@ -27,6 +27,7 @@
     "ssh_username": "provision",
 
     "vm_name": "ubuntu-{{user `ubuntu_release`}}",
+    "vm_id": "9100",
     "hostname": "{{user `vm_name`}}",
     "boot_command_prefix": "<esc><esc><enter><wait>",
     "boot_command_suffix": [
@@ -61,7 +62,7 @@
       "password": "{{user `proxmox_api_password`}}",
 
       "vm_name": "{{user `vm_name`}}",
-      "vm_id": 9100,
+      "vm_id": "{{user `vm_id`}}",
       "node": "node1",
       "sockets": "{{user `cpus`}}",
       "cores": "{{user `cores`}}",
@@ -80,11 +81,7 @@
           "storage_pool": "local-zfs",
           "storage_pool_type": "zfspool",
           "format": "raw"
-        },
-        {
-          "type": "ide",
-          "storage_pool": "local-zfs",
-          "storage_pool_type": "zfspool"
+        }
       ],
       "qemu_agent": true,
 
@@ -149,6 +146,14 @@
     }
   ],
   "post-processors": [
+    {
+      "keep_input_artifact": true,
+      "type": "shell-local",
+      "inline": [
+          "{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_api_ip`}} {{user `vm_id`}}"
+      ],
+      "only": ["proxmox"]
+    },
     {
       "keep_input_artifact": false,
       "output": "box/{{.Provider}}/{{user `vm_name`}}.box",
