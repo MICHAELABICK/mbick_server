@@ -4,7 +4,13 @@
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 PROJECT_DIR="$(cd "${SRC_DIR}/../.."; pwd)"
 
-export TF_VAR_gateway=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
-    "$PROJECT_DIR/common.env" GATEWAY)
+
 export PM_API_URL=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
     "$PROJECT_DIR/common.env" PROXMOX_API_URL)
+export PM_USER=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
+    "$PROJECT_DIR/defaults.env" PROXMOX_API_USER)
+export PM_PASS=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
+    "$PROJECT_DIR/defaults.env" PROXMOX_API_PASSWORD)
+
+export TF_VAR_gateway=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
+    "$PROJECT_DIR/common.env" GATEWAY)

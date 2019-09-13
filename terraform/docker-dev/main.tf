@@ -3,8 +3,6 @@ variable "gateway" {
 }
 
 provider "proxmox" {
-  pm_user = "terraform@pve"
-  pm_password = "secret"
   pm_tls_insecure = true
 }
 
