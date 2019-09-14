@@ -16,8 +16,7 @@ export PROXMOX_PASSWORD=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
 
 python "$VENDOR_DIR/proxmox.py" \
     --trust-invalid-certs \
-    --list \
-    --pretty
+    $*
 
 # python "$VENDOR_DIR/proxmox.py" \
 #     --url="$PROXMOX_URL" \
