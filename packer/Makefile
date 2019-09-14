@@ -5,6 +5,7 @@ BUILD_DIR := build
 TEMPLATE_DIR := templates
 
 proxmox_host_ip := $(shell ifconfig `route get 192.168.11.1 | grep "interface: " | sed "s/[^:]*: \(.*\)/\1/"` | grep "inet " | sed "s/.*inet \([0-9.]*\) .*/\1/")
+proxmox_api_url := '$(PROXMOX_URL)/api2/json'
 
 templates := $(wildcard $(TEMPLATE_DIR)/*/*.json)
 config_scripts := $(filter-out $(templates),$(shell find templates -type f -not -path '*/\.*'))
@@ -14,7 +15,7 @@ config_scripts_build := $(patsubst $(TEMPLATE_DIR)/%,$(BUILD_DIR)/%,$(config_scr
 
 images: new-proxmox-images
 new-proxmox-images: build
-	PROXMOX_URL=${PROXMOX_API_URL} \
+	PROXMOX_URL=${proxmox_api_url} \
 		packer build \
 		-var-file=defaults.json \
 		-var 'proxmox_api_ip=${PROXMOX_API_IP}' \
@@ -27,7 +28,7 @@ proxmox-images:
 	docker-compose run --rm $(SERVICE) build ubuntu.json
 build validate: $(templates_build) $(config_scripts_build)
 validate:
-	PROXMOX_URL=${PROXMOX_API_URL} \
+	PROXMOX_URL=${proxmox_api_url} \
 		packer validate \
 		-var-file=defaults.json \
 		-var 'proxmox_api_ip=${PROXMOX_API_IP}' \
