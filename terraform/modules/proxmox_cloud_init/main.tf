@@ -1,6 +1,7 @@
 locals {
   ssh_user = "provision"
   ssh_password = "provision"
+  ssh_host = "${element(split("/", var.ip), 0)}"
 }
 
 resource "proxmox_vm_qemu" "cloudinit-test" {
@@ -32,14 +33,18 @@ resource "proxmox_vm_qemu" "cloudinit-test" {
 
   provisioner "remote-exec" {
     inline = [
-      "ip a"
+      "echo \"Connection to ${local.ssh_host} established \""
     ]
 
     connection {
       type = "ssh"
-      user = local.ssh_user
-      password = local.ssh_password
-      host = "${element(split("/", var.ip), 0)}"
+      user = "${local.ssh_user}"
+      password = "${local.ssh_password}"
+      host = "${local.ssh_host}"
     }
   }
+
+  # provisioner "local-exec" {
+  #   command = "ansible-playbook -u ${local.ssh_user} ../../../provisioning/provision.yml"
+  # }
 }

@@ -6,10 +6,10 @@ provider "proxmox" {
   pm_tls_insecure = true
 }
 
-module "cloudinit-test" {
+module "proxmox_cloud_init" {
   source = "../modules/proxmox_cloud_init"
 
-  name = "cloudinit-test"
+  name = "docker-dev"
   node = "node1"
   clone = "packer-ubuntu-bionic"
 
