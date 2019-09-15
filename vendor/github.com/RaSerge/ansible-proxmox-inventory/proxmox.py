@@ -156,7 +156,7 @@ class ProxmoxAPI(object):
     def node_qemu_description(self, node, vm):
         return self.vm_description_by_type(node, vm, 'qemu')
 
-    
+
     def node_qemu_ip(self, node, vm):
         try:
             return self.get('api2/json/nodes/{0}/qemu/{1}/agent/network-get-interfaces'.format(node, vm))
@@ -171,7 +171,7 @@ class ProxmoxAPI(object):
 
     def version(self):
         return ProxmoxVersion(self.get('api2/json/version'))
-    
+
 def main_list(options, config_path):
     results = {
         'all': {
