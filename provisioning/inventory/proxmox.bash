@@ -5,9 +5,7 @@ set -e
 # change directory to location of this script
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 PROJECT_DIR="$(cd "${SRC_DIR}/../.."; pwd)"
-# SCRIPT_DIR="$PROJECT_DIR/vendor/ansible-proxmox-inventory"
-# SCRIPT_DIR="$PROJECT_DIR/vendor/github.com/RaSerge/ansible-proxmox-inventory"
-SCRIPT_DIR="$PROJECT_DIR/../Ansible-Proxmox-inventory"
+SCRIPT_DIR="$PROJECT_DIR/vendor/github.com/MICHAELABICK/Ansible-Proxmox-inventory"
 
 PROXMOX_URL=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
     "$PROJECT_DIR/common.env" PROXMOX_URL)"/"
@@ -20,6 +18,6 @@ python "$SCRIPT_DIR/proxmox.py" \
     --url="$PROXMOX_URL" \
     --username="$PROXMOX_USERNAME" \
     --password="$PROXMOX_PASSWORD" \
-    --qemu_default_interface \
+    --qemu-default-interface \
     --trust-invalid-certs \
     --list --pretty
