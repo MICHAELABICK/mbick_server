@@ -4,9 +4,9 @@
     "inventory_dir": "{{user `provision_dir`}}/inventory",
     "http_directory": "{{template_dir}}/http",
     "preseed": "preseed.cfg",
-    "proxmox_host_ip": null,
+    "local_host_ip": null,
 
-    "proxmox_api_ip": null,
+    "proxmox_host": null,
     "proxmox_api_user": "packer@pve",
     "proxmox_api_password": "supersecret",
 
@@ -91,7 +91,7 @@
       "boot_command": [
         "{{ user `boot_command_prefix` }}",
         "/install/vmlinuz ",
-        "preseed/url=http://{{user `proxmox_host_ip`}}:{{ .HTTPPort }}/{{user `preseed`}} ",
+        "preseed/url=http://{{user `local_host_ip`}}:{{ .HTTPPort }}/{{user `preseed`}} ",
         "{{user `boot_command_suffix`}}"
       ],
 
@@ -150,7 +150,7 @@
       "keep_input_artifact": true,
       "type": "shell-local",
       "inline": [
-          "{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_api_ip`}} {{user `vm_id`}}"
+          "{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_host`}} {{user `vm_id`}}"
       ],
       "only": ["proxmox"]
     },
