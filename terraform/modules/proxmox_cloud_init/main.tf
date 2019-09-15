@@ -2,10 +2,12 @@ locals {
   ssh_user = "provision"
   ssh_password = "provision"
   ssh_host = "${element(split("/", var.ip), 0)}"
+  provision_dir = "../../provisioning"
 }
 
-resource "proxmox_vm_qemu" "cloudinit-test" {
+resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   name = "${var.name}"
+  # desc = "this is a description"
   target_node = "${var.node}"
   clone = "${var.clone}"
 
@@ -44,7 +46,7 @@ resource "proxmox_vm_qemu" "cloudinit-test" {
     }
   }
 
-  # provisioner "local-exec" {
-  #   command = "ansible-playbook -u ${local.ssh_user} ../../../provisioning/provision.yml"
-  # }
+  provisioner "local-exec" {
+    command = "ansible-playbook -u ${local.ssh_user} -i \"${var.name},\" -i \"${local.provision_dir}/inventory/\" \"${local.provision_dir}/provision.yml\""
+  }
 }
