@@ -342,7 +342,7 @@ def main():
     parser.add_option('--username', default=os.environ.get('PROXMOX_USERNAME'), dest='username')
     parser.add_option('--password', default=os.environ.get('PROXMOX_PASSWORD'), dest='password')
     parser.add_option(
-            '--qemu_default_interface',
+            '--qemu-default-interface',
             action="store_true",
             default=False,
             dest='default_interface'
