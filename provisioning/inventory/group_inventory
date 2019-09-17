@@ -12,6 +12,9 @@
 ## Locations
 [los-angeles]
 
+## VM Applications
+[docker-host]
+
 
 # Group Hierarchy
 ## OS Groups
@@ -22,15 +25,18 @@ ubuntu-python3
 ubuntu-bionic
 
 ## Machine Groups
-[vms:children]
+[vm:children]
 proxmox-vm
+
+[proxmox-vm:children]
+proxmox-cloud-init-vm
 
 ## Software Groups
 [python3:children]
 ubuntu-python3
 
 [cloud-init:children]
-proxmox-vm
+proxmox-cloud-init-vm
 
 # Variables
 [python3:vars]
