@@ -13,6 +13,9 @@ resource "proxmox_vm_qemu" "cloudinit-test" {
   sockets = var.sockets
   memory  = var.memory
 
+  # Activate QEMU agent for this VM
+  agent = 1
+
   disk {
     id = 0
     type = "scsi"
