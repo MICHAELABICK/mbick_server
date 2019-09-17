@@ -1,5 +1,5 @@
 ---
-- hosts: vms
+- hosts: vm
   vars:
     provision_group: provision
     provision_user: provision
@@ -68,7 +68,7 @@
         name: sshd
         state: restarted
 
-# - hosts: vms
+# - hosts: vm
 #   roles:
 #     # - oefenweb.sudoers
 #     # - andrewrothstein.sudoers
