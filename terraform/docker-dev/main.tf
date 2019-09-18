@@ -19,4 +19,6 @@ module "docker-dev01" {
   disk_gb = 20
   ip = "192.168.11.121/24"
   gateway = "${var.gateway}"
+
+  groups = ["proxmox-vm", "ubuntu-bionic", "cloud-init", "docker-host"]
 }

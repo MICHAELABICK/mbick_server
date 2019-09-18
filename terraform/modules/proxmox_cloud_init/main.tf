@@ -3,11 +3,12 @@ locals {
   ssh_password = "provision"
   ssh_host = "${element(split("/", var.ip), 0)}"
   provision_dir = "../../provisioning"
+  description_map = {"groups" = var.groups}
 }
 
 resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   name = "${var.name}"
-  # desc = "this is a description"
+  desc = "${jsonencode(local.description_map)}"
   target_node = "${var.node}"
   clone = "${var.clone}"
 
@@ -50,7 +51,7 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   }
 
   provisioner "local-exec" {
-    command = "ansible-inventory -i \"${local.provision_dir}/inventory\" --list"
-    # command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
+    # command = "ansible-inventory -i \"${local.provision_dir}/inventory\" --list"
+    command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
   }
 }

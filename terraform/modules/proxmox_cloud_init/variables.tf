@@ -37,3 +37,8 @@ variable "ip" {
 variable "gateway" {
   type = string
 }
+
+variable "groups" {
+  type = list(string)
+  default = []
+}
