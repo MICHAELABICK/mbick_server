@@ -47,6 +47,7 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -u ${local.ssh_user} -i \"${var.name},\" -i \"${local.provision_dir}/inventory/\" \"${local.provision_dir}/provision.yml\""
+    command = "ansible-inventory -i \"${local.provision_dir}/inventory\" --list"
+    # command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
   }
 }
