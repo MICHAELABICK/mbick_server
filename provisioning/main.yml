@@ -40,7 +40,7 @@
     - create_vms
 
 
-- hosts: docker-host
+- hosts: docker_host
   remote_user: "{{ default_user }}"
   become: yes
   # vars:

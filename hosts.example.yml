@@ -10,7 +10,7 @@ hypervisors:
       - name: docker01
         os: ubuntu
         groups:
-          - docker-hosts
+          - docker_host
         docker-cts:
           - duckdns
     lxc-cts:
