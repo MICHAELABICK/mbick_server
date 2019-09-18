@@ -1,5 +1,5 @@
 ---
-- hosts: vms
+- hosts: vm
   vars:
     provision_group: provision
     provision_user: provision
@@ -68,7 +68,7 @@
         name: sshd
         state: restarted
 
-# - hosts: vms
+# - hosts: vm
 #   roles:
 #     # - oefenweb.sudoers
 #     # - andrewrothstein.sudoers
@@ -92,7 +92,7 @@
   tasks:
     # qemu-guest-agent has to be installed during preseed
     # so that proxmox knows the IP address of the server,
-    # but we are checking that it is installed anyways
+    # but we are checking that it is installed/updated anyways
     - name: Install qemu-guest-agent
       apt:
         name: qemu-guest-agent

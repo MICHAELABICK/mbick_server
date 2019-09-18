@@ -15,6 +15,9 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   sockets = var.sockets
   memory  = var.memory
 
+  # Activate QEMU agent for this VM
+  agent = 1
+
   disk {
     id = 0
     type = "scsi"
