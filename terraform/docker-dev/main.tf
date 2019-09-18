@@ -6,10 +6,10 @@ provider "proxmox" {
   pm_tls_insecure = true
 }
 
-module "proxmox_cloud_init" {
+module "docker-dev01" {
   source = "../modules/proxmox_cloud_init"
 
-  name = "docker-dev"
+  name = "docker-dev01"
   node = "node1"
   clone = "packer-ubuntu-bionic"
 
@@ -19,4 +19,6 @@ module "proxmox_cloud_init" {
   disk_gb = 20
   ip = "192.168.11.121/24"
   gateway = "${var.gateway}"
+
+  groups = ["proxmox-vm", "ubuntu-bionic", "cloud-init", "docker-host"]
 }
