@@ -15,6 +15,9 @@
 ## VM Applications
 [docker-host]
 
+## Software
+[cloud-init]
+
 
 # Group Hierarchy
 ## OS Groups
@@ -24,19 +27,16 @@ ubuntu-python3
 [ubuntu-python3:children]
 ubuntu-bionic
 
+[freebsd:children]
+freenas
+
 ## Machine Groups
 [vm:children]
 proxmox-vm
 
-[proxmox-vm:children]
-proxmox-cloud-init-vm
-
 ## Software Groups
 [python3:children]
 ubuntu-python3
-
-[cloud-init:children]
-proxmox-cloud-init-vm
 
 # Variables
 [python3:vars]

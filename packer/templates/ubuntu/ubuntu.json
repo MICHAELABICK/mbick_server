@@ -140,7 +140,8 @@
       ],
       "groups": [
         "proxmox-vm",
-        "ubuntu-{{user `ubuntu_release`}}"
+        "ubuntu-{{user `ubuntu_release`}}",
+        "cloud-init"
       ],
       "user": "{{user `ssh_username`}}"
     }
