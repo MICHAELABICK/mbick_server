@@ -79,7 +79,7 @@
       apt:
         update_cache: yes
 
-- hosts: cloud-init
+- hosts: cloud_init
   become: yes
   tasks:
     - name: Install cloud-init

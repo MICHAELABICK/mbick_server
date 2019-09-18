@@ -13,7 +13,7 @@ nas ansible_host=192.168.1.111
 [ubuntu]
 
 # Locations
-[los-angeles]
+[los_angeles]
 node01
 nas
 

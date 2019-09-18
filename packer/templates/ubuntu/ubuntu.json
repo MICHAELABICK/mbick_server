@@ -139,9 +139,9 @@
         "ansible_become_password={{user `ssh_password`}}"
       ],
       "groups": [
-        "proxmox-vm",
-        "ubuntu-{{user `ubuntu_release`}}",
-        "cloud-init"
+        "proxmox_vm",
+        "ubuntu_{{user `ubuntu_release`}}",
+        "cloud_init"
       ],
       "user": "{{user `ssh_username`}}"
     }
