@@ -1,9 +1,13 @@
 locals {
-  ssh_user = "provision"
-  ssh_password = "provision"
-  ssh_host = "${element(split("/", var.ip), 0)}"
   provision_dir = "../../provisioning"
+  ssh_dir = "../../ssh"
+
+  ssh_host = "${element(split("/", var.ip), 0)}"
   description_map = {"groups" = concat(["proxmox_vm", "cloud_init", "terraform_managed"], var.groups)}
+
+  default_user = "test"
+  default_password = "provision"
+  ssh_user = "mbick"
 }
 
 resource "proxmox_vm_qemu" "proxmox_cloud_init" {
@@ -34,8 +38,8 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   os_type = "cloud-init"
   ipconfig0 = "ip=${var.ip},gw=${var.gateway}"
 
-  # ciuser = local.ssh_user
-  # cipassword = local.ssh_password
+  ciuser = local.default_user
+  cipassword = local.default_password
 
   provisioner "remote-exec" {
     inline = [
@@ -44,15 +48,15 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
 
     connection {
       type = "ssh"
-      user = "${local.ssh_user}"
-      password = "${local.ssh_password}"
+      user = "${local.default_user}"
+      password = "${local.default_password}"
       host = "${local.ssh_host}"
     }
   }
 
   provisioner "local-exec" {
     # command = "ansible-inventory -i \"${local.provision_dir}/inventory\" --list"
-    command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/manage_users.yml\""
+    command = "ansible-playbook --limit \"${var.name}\" -u ${local.default_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/manage_users.yml\""
 
     environment = {
       ANSIBLE_HOST_KEY_CHECKING = "false"
