@@ -3,7 +3,7 @@
 ssh_keys_dir: ../ssh
 ssh_users:
   - name: mbick
-    id:   1000
+    id:   1100
 
 ssh_user:     mbick
 api_user:     ansible@pve

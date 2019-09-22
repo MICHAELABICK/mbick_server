@@ -10,6 +10,10 @@ node1 ansible_host=192.168.1.101 ansible_user=root
 ## Machine Types
 [proxmox_vm]
 
+[terraform_managed]
+
+[vagrant]
+
 ## Locations
 [los_angeles]
 
@@ -38,6 +42,10 @@ proxmox
 [vm:children]
 proxmox_vm
 
+[insecure_ssh:children]
+terraform_managed
+vagrant
+
 ## Software Groups
 [python3:children]
 ubuntu_python3
@@ -45,3 +53,6 @@ ubuntu_python3
 # Variables
 [python3:vars]
 ansible_python_interpreter=/usr/bin/python3
+
+[insecure_ssh:vars]
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'

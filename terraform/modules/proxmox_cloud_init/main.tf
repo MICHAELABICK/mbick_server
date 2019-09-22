@@ -3,7 +3,7 @@ locals {
   ssh_password = "provision"
   ssh_host = "${element(split("/", var.ip), 0)}"
   provision_dir = "../../provisioning"
-  description_map = {"groups" = var.groups}
+  description_map = {"groups" = concat(["proxmox_vm", "cloud_init", "terraform_managed"], var.groups)}
 }
 
 resource "proxmox_vm_qemu" "proxmox_cloud_init" {
@@ -52,6 +52,19 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
 
   provisioner "local-exec" {
     # command = "ansible-inventory -i \"${local.provision_dir}/inventory\" --list"
+    command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/manage_users.yml\""
+
+    environment = {
+      ANSIBLE_HOST_KEY_CHECKING = "false"
+    }
+  }
+
+  provisioner "local-exec" {
     command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
+  }
+
+  provisioner "local-exec" {
+    when    = "destroy"
+    command = "ssh-keygen -R ${local.ssh_host}"
   }
 }
