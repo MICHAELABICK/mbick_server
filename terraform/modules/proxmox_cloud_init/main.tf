@@ -5,8 +5,11 @@ locals {
   ssh_host = "${element(split("/", var.ip), 0)}"
   description_map = {"groups" = concat(["proxmox_vm", "cloud_init", "terraform_managed"], var.groups)}
 
-  default_user = "test"
-  default_password = "provision"
+  default_user = "provision"
+  # default_password = "provision"
+  default_private_key_file = "${local.ssh_dir}/default"
+  default_public_key_file = "${local.ssh_dir}/default.pub"
+  default_public_key = "${chomp(file(local.default_public_key_file))}"
   ssh_user = "mbick"
 }
 
@@ -39,7 +42,14 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   ipconfig0 = "ip=${var.ip},gw=${var.gateway}"
 
   ciuser = local.default_user
-  cipassword = local.default_password
+  # cipassword = local.default_password
+  sshkeys = <<EOF
+${local.default_public_key}
+EOF
+
+  provisioner "local-exec" {
+    command = "ssh-keygen -R ${local.ssh_host}"
+  }
 
   provisioner "remote-exec" {
     inline = [
@@ -49,14 +59,15 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
     connection {
       type = "ssh"
       user = "${local.default_user}"
-      password = "${local.default_password}"
+      # password = "${local.default_password}"
+      private_key = "${file(local.default_private_key_file)}"
       host = "${local.ssh_host}"
     }
   }
 
   provisioner "local-exec" {
     # command = "ansible-inventory -i \"${local.provision_dir}/inventory\" --list"
-    command = "ansible-playbook --limit \"${var.name}\" -u ${local.default_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/manage_users.yml\""
+    command = "ansible-playbook --limit \"${var.name}\" -u ${local.default_user} --private-key=${local.default_private_key_file} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/manage_users.yml\""
 
     environment = {
       ANSIBLE_HOST_KEY_CHECKING = "false"
@@ -68,7 +79,7 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   }
 
   provisioner "local-exec" {
-    when    = "destroy"
+    when = "destroy"
     command = "ssh-keygen -R ${local.ssh_host}"
   }
 }
