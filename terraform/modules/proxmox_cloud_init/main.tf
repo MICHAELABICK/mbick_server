@@ -6,7 +6,6 @@ locals {
   description_map = {"groups" = concat(["proxmox_vm", "cloud_init", "terraform_managed"], var.groups)}
 
   default_user = "provision"
-  # default_password = "provision"
   default_private_key_file = "${local.ssh_dir}/default"
   default_public_key_file = "${local.ssh_dir}/default.pub"
   default_public_key = "${chomp(file(local.default_public_key_file))}"
@@ -42,7 +41,6 @@ resource "proxmox_vm_qemu" "proxmox_cloud_init" {
   ipconfig0 = "ip=${var.ip},gw=${var.gateway}"
 
   ciuser = local.default_user
-  # cipassword = local.default_password
   sshkeys = <<EOF
 ${local.default_public_key}
 EOF
@@ -75,6 +73,7 @@ EOF
   }
 
   provisioner "local-exec" {
+    # command = "ansible-playbook --limit \"${var.name}\" -u ${local.default_user} --private-key=${local.default_private_key_file} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
     command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
   }
 

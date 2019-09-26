@@ -1,0 +1,76 @@
+---
+- hosts: docker01
+  become: yes
+  pre_tasks:
+    - name: Apt update
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        state: present
+  roles:
+    - { role: "nickjj.docker", tags: ["docker"] }
+    - gen-docker-compose
+
+  tasks:
+    - name: Install docker module
+      pip:
+        name: docker
+
+    - name: Install docker-compose module
+      pip:
+        name: docker-compose
+
+    - name: Create groups
+      group:
+        name: "{{ item.name }}"
+        gid: "{{ item.id }}"
+        state: present
+      loop: "{{ ct_users }}"
+
+    - name: Create users
+      user:
+        name: "{{ item.name }}"
+        uid: "{{ item.id }}"
+        groups: "[ '{{ item.name }}' ] + {{ item.groups | default([]) }}"
+        # create_home: no
+        system: yes
+        state: present
+      loop: "{{ ct_users }}"
+
+    # - name: Create mount directory
+    #   file:
+    #     path: "{{ mount_dir }}"
+    #     state: directory
+
+    - name: Create mountpoints for containers
+      file:
+        path: "{{ mount_dir }}/{{ item.name }}"
+        owner: "{{ item.owner }}"
+        group: "{{ item.owner }}"
+        state: directory
+        mode: 0775
+      loop: "{{ volumes|selectattr('type', 'equalto', 'mount-dir')|list }}"
+
+    - name: Add Vagrant user to all container groups
+      user:
+        name: vagrant
+        groups:
+          - "{{ item.name }}"
+        append: yes
+      loop: "{{ ct_users }}"
+
+    # - name: Copy source files to build directory
+    #   synchronize:
+    #     src: ../src/
+    #     dest: "{{ build_dir }}"
+    #     recursive: yes
+    #     delete: yes
+
+    - name: Run docker-compose
+      shell: docker-compose up -d
+      args:
+        chdir: "{{ build_dir }}"
