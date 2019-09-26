@@ -3,7 +3,7 @@
 ssh_keys_dir: ../ssh
 ssh_users:
   - name: mbick
-    id:   1000
+    id:   1100
 
 ssh_user:     mbick
 api_user:     ansible@pve
@@ -94,27 +94,3 @@ volumes:
   #   owner: media
 
 rclone_mount_options: --allow-non-empty
-
-# Pin Docker version 18.06 from the stable channel.
-# docker_version: "18.06"
-
-# Allow the admin and zerocool users to access Docker without needing root access.
-docker_users: ["vagrant"]
-
-# A couple of examples of authenticating to a Docker registry.
-# docker_registries:
-#   # Authenticate to the Docker Hub, and allow the "admin" system user acces to it:
-#   - username: "mbick"
-#     password: ""
-#     email: "mafbick@gmail.com"
-#     system_user: "{{ docker_users | first }}"
-#   # Authenticate to some other private registry and allow "zerocool":
-#   - registry_url: "https://your-registry.com"
-#     username: "some_other_username"
-#     password: "some_other_password"
-#     system_user: "zerocool"
-#   # Disable logging in to some old registry you don't use anymore:
-#   - registry_url: "https://old-registry.com"
-#     username: "some_old_username"
-#     password: "some_old_password"
-#     state: "absent"

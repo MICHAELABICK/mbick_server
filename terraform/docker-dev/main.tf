@@ -11,14 +11,14 @@ module "docker-dev01" {
 
   name = "docker-dev01"
   node = "node1"
-  clone = "packer-ubuntu-bionic"
+  clone = "ubuntu-bionic"
 
   cores = 2
   sockets = 1
   memory = 4096
   disk_gb = 20
-  ip = "192.168.11.121/24"
+  ip = "192.168.11.120/24"
   gateway = "${var.gateway}"
 
-  groups = ["proxmox_vm", "ubuntu_bionic", "cloud_init", "docker_host"]
+  groups = ["ubuntu_bionic", "docker_host"]
 }
