@@ -1,4 +1,4 @@
-- hosts: vms
+- hosts: vm
   tasks:
     - name: Wait for automatic system updates
       become: yes

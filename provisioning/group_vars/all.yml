@@ -1,32 +1,12 @@
 ---
-# Role Variables: create_vms
-ssh_keys_dir: ../ssh
 ssh_users:
   - name: mbick
     id:   1100
-
-# Assumes that we are creating a vm from a template, that has cloud-init
-# functionality
-gateway:  192.168.1.1
-vms:
-  - name:     docker01
-    vmid:     110
-    node:     node1
-    template: ubuntu-bionic
-    memory:   2048
-    sockets:  1
-    cores:    1
-    # TODO: pull automatically from the hosts file and enable DHCP functionality
-    ip:       192.168.1.120
-    groups:
-      - docker_host
-      - ubuntu
+# TODO: figure out how to add default user to the docker_users list
+docker_users: "{{ ssh_users | map(attribute='name') | list | join(',') }}"
 
 
-# Role Variables: gen_docker_compose
-docker_compose_file_version: 3.7
-src_dir: ../src # on the local machine
-
+# TODO: replace this with an actual compose file
 ct_users:
   - name: media
     id: 10000

@@ -1,6 +1,8 @@
 [all:vars] # TODO: dynamically generate these
+ssh_keys_dir=../ssh
+
 ansible_user=mbick
 
-api_user:     ansible@pve
-api_password: password # TODO: encrypt this
-api_host:     node1
+api_user=ansible@pve
+api_password=password # TODO: encrypt this
+api_host=node1
