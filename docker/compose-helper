@@ -1,0 +1,80 @@
+#!/usr/bin/python3
+
+import os
+import subprocess
+import argparse
+
+
+def main():
+    parser = argparse.ArgumentParser(
+            description='docker-compose helper script for mbick_server')
+    parser.add_argument(
+            'machines',
+            type=str,
+            help=(
+                'Comma-seperated list of machines to run commands on. '
+                'Use "all" to run on all docker hosts'
+            ),
+        )
+    parser.add_argument(
+            'files',
+            type=str,
+            help='Comma-seperated list of docker-compose files to use',
+        )
+    parser.add_argument(
+            'command',
+            type=str,
+            help=(
+                'Docker-compose command to run. '
+                'Use "docker-compose -h" to get a list of possible commands'
+            )
+        )
+    parser.add_argument(
+            'arg',
+            type=str,
+            nargs='*',
+            help='Command arguments'
+        )
+    args = parser.parse_args()
+
+    machines = parse_machines(args.machines)
+    compose_files = args.files.split(',')
+
+    docker_compose_command(machines, compose_files, args.command, args.arg)
+
+
+def parse_machines(arg_string):
+    # TODO: implement ansible inventory use
+    machines = arg_string.split(',')
+    return machines
+
+
+def docker_compose_command(machines, compose_files, command, args=None):
+    for m in machines:
+        for cf in compose_files:
+            arg_list = [
+                    'docker-compose',
+                    '--file',
+                    cf,
+                    '--host',
+                    get_machine_host(m),
+                    command,
+                ] + args
+
+            print(' '.join(arg_list))
+            subprocess.run(arg_list)
+
+
+def get_machine_host(name):
+    # TODO: actually use machine name
+    # return 'tcp://192.168.11.120:2375'
+    return 'ssh://mbick@192.168.11.120'
+
+# def set_machine_variables(name):
+#     # TODO: actually use machine name
+#     os.environ['DOCKER_HOST'] = 'tcp://192.168.11.120:2375'
+#     os.environ['DOCKER_TLS_VERIFY'] = False
+
+
+if __name__ == '__main__':
+    main()
