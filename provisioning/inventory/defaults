@@ -1,0 +1,6 @@
+[all:vars] # TODO: dynamically generate these
+ansible_user=mbick
+
+api_user:     ansible@pve
+api_password: password # TODO: encrypt this
+api_host:     node1

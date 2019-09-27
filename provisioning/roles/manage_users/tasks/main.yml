@@ -19,6 +19,7 @@
   user:
     group: sudo
     name: "{{ item.name }}"
+    shell: /bin/bash
     uid: "{{ item.id }}"
   with_items: "{{ ssh_users }}"
   notify:

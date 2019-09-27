@@ -5,12 +5,6 @@ ssh_users:
   - name: mbick
     id:   1100
 
-ssh_user:     mbick
-api_user:     ansible@pve
-api_password: password # TODO: encrypt this
-api_host:     node1
-location:     los_angeles
-
 # Assumes that we are creating a vm from a template, that has cloud-init
 # functionality
 gateway:  192.168.1.1

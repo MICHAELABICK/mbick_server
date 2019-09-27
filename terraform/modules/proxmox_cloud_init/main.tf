@@ -65,7 +65,7 @@ EOF
 
   provisioner "local-exec" {
     # command = "ansible-inventory -i \"${local.provision_dir}/inventory\" --list"
-    command = "ansible-playbook --limit \"${var.name}\" -u ${local.default_user} --private-key=${local.default_private_key_file} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/manage_users.yml\""
+    command = "ansible-playbook --limit \"${var.name}\" -e \"ansible_user=${local.default_user}\" --private-key=${local.default_private_key_file} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/manage_users.yml\""
 
     environment = {
       ANSIBLE_HOST_KEY_CHECKING = "false"
@@ -73,8 +73,8 @@ EOF
   }
 
   provisioner "local-exec" {
-    # command = "ansible-playbook --limit \"${var.name}\" -u ${local.default_user} --private-key=${local.default_private_key_file} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
-    command = "ansible-playbook --limit \"${var.name}\" -u ${local.ssh_user} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
+    # command = "ansible-playbook --limit \"${var.name}\" -e \"ansible_user=${local.default_user}\" --private-key=${local.default_private_key_file} -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
+    command = "ansible-playbook --limit \"${var.name}\" -i \"${local.provision_dir}/inventory\" \"${local.provision_dir}/provision.yml\""
   }
 
   provisioner "local-exec" {

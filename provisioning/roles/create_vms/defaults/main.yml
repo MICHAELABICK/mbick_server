@@ -1,4 +1,0 @@
-default_user: provision
-# default_ssh_key_file_name: default
-
-temp_keys_dir: ~/.ssh/temp_keys
