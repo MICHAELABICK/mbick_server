@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import subprocess
 import argparse
 
@@ -40,7 +41,19 @@ def main():
     machines = parse_machines(args.machines)
     compose_files = args.files.split(',')
 
-    docker_compose_command(machines, compose_files, args.command, args.arg)
+    try:
+        user = os.environ['COMPOSE_SSH_USER']
+    except KeyError:
+        print("COMPOSE_SSH_USER environment variable must be set")
+        sys.exit(1)
+
+    docker_compose_command(
+            machines=machines,
+            compose_files=compose_files,
+            user=user,
+            command=args.command,
+            args=args.arg
+        )
 
 
 def parse_machines(arg_string):
@@ -49,7 +62,7 @@ def parse_machines(arg_string):
     return machines
 
 
-def docker_compose_command(machines, compose_files, command, args=None):
+def docker_compose_command(machines, compose_files, user, command, args=None):
     for m in machines:
         for cf in compose_files:
             arg_list = [
@@ -57,7 +70,7 @@ def docker_compose_command(machines, compose_files, command, args=None):
                     '--file',
                     cf,
                     '--host',
-                    get_machine_host(m),
+                    'ssh://{0}@{1}'.format(user, get_machine_host(m)),
                     command,
                 ] + args
 
@@ -66,9 +79,7 @@ def docker_compose_command(machines, compose_files, command, args=None):
 
 
 def get_machine_host(name):
-    # TODO: actually use machine name
-    # return 'tcp://192.168.11.120:2375'
-    return 'ssh://mbick@192.168.11.120'
+    return '192.168.11.120'
 
 # def set_machine_variables(name):
 #     # TODO: actually use machine name
