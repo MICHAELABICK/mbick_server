@@ -5,7 +5,8 @@ set -e
 # change directory to location of this script
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 PROJECT_DIR="$(cd "${SRC_DIR}/../.."; pwd)"
-SCRIPT_DIR="$PROJECT_DIR/vendor/github.com/MICHAELABICK/Ansible-Proxmox-inventory"
+VENDOR_DIR="$(cd "${PROJECT_DIR}/../../vendor"; pwd)"
+SCRIPT_DIR="$VENDOR_DIR/github.com/MICHAELABICK/Ansible-Proxmox-inventory"
 
 PROXMOX_URL=$(/bin/bash "$PROJECT_DIR/scripts/parse_env_file" \
     "$PROJECT_DIR/common.env" PROXMOX_URL)"/"
