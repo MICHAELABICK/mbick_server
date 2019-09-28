@@ -94,7 +94,7 @@
         name: cloud-init
         state: present
 
-- hosts: proxmox-vm
+- hosts: proxmox_vm
   become: yes
   tasks:
     # qemu-guest-agent has to be installed during preseed

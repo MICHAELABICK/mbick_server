@@ -26,9 +26,8 @@
     "ssh_password": "packer",
     "ssh_username": "packer",
 
-    "vm_name": "ubuntu-{{user `ubuntu_release`}}",
-    "vm_id": "9000",
-    "hostname": "{{user `vm_name`}}",
+    "vm_name": "{{user `hostname`}}-{{timestamp}}",
+    "hostname": "ubuntu-{{user `ubuntu_release`}}",
     "boot_command_prefix": "<esc><esc><enter><wait>",
     "boot_command_suffix": [
       "auto ",
@@ -62,7 +61,6 @@
       "password": "{{user `proxmox_api_password`}}",
 
       "vm_name": "{{user `vm_name`}}",
-      "vm_id": "{{user `vm_id`}}",
       "node": "node1",
       "sockets": "{{user `cpus`}}",
       "cores": "{{user `cores`}}",
@@ -134,7 +132,9 @@
       "playbook_file": "{{user `provision_dir`}}/bake_image.yml",
       "extra_arguments": [
         "-i",
-        "{{user `inventory_dir`}}",
+        "{{user `inventory_dir`}}/group_inventory",
+        "-i",
+        "{{user `inventory_dir`}}/defaults",
         "-e",
         "ansible_become_password={{user `ssh_password`}}"
       ],
@@ -151,7 +151,7 @@
       "keep_input_artifact": true,
       "type": "shell-local",
       "inline": [
-          "{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_host`}} {{user `vm_id`}}"
+          "{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_host`}} -n \"{{user `vm_name`}}\""
       ],
       "only": ["proxmox"]
     },

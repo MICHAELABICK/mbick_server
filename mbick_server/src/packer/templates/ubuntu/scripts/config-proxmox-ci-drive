@@ -3,15 +3,71 @@
 # config according to instructions at
 # https://pve.proxmox.com/wiki/Cloud-Init_Support
 
-{ error=$(qm set $1 --ide2 local-zfs:cloudinit 2>&1 1>&$out); } {out}>&1
+cannot_resolve_id=true
+
+while getopts ":hn:i:" opt; do
+  case ${opt} in
+    h)
+      echo "Usage:"
+      echo "  config-proxmox-ci-drive [options]"
+      echo ""
+      echo "Options:"
+      echo "  -h            Show help."
+      echo "  -n <name>     VM name"
+      echo "  -i <id>       VM id"
+      exit 0
+      ;;
+    n)
+      cannot_resolve_id=false
+      vm_name=$OPTARG
+      if [[ -z "$vm_name" ]]; then
+        echo "VM name is empty"
+        exit 1
+      fi
+      ;;
+    i)
+      cannot_resolve_id=false
+      vm_id=$OPTARG
+      if [[ -z "$vm_id" ]]; then
+        echo "VM id is empty"
+        exit 1
+      fi
+      ;;
+    \?)
+      echo "Invalid option: $OPTARG" 1>&2
+      exit 1
+      ;;
+  esac
+done
+shift "$(($OPTIND -1))"
+
+# only try to resolve vm name into id if the id was not provided
+if [[ -z "$vm_id" ]]; then
+  vm_id=$(qm list | grep "$vm_name" | awk '{ print $1 }')
+fi
+
+if "$cannot_resolve_id"; then
+  echo "Must use either '-i' or '-n' option to resolve VM ID"
+  exit 1
+fi
+
+if [ -z "$vm_id" ]; then
+  echo "Invalid VM name: unable to resolve VM ID"
+  exit 1
+else
+  echo "VM ID used: $vm_id"
+fi
+
+
+{ error=$(qm set $vm_id --ide2 local-zfs:cloudinit 2>&1 1>&$out); } {out}>&1
 
 set -e
 
 if [ -z "$error" ]; then
-  qm set $1 --boot c --bootdisk scsi0
-  qm set $1 --serial0 socket --vga serial0
+  qm set $vm_id --boot c --bootdisk scsi0
+  qm set $vm_id --serial0 socket --vga serial0
 elif [[ $error == *"Configuration file"*"does not exist"* ]]; then
-  echo "vm with id $1 does not exist" 1>&2
+  echo "vm with id $vm_id does not exist" 1>&2
   exit 64
 elif [[ $error == *"dataset already exists"* ]]; then
   echo "cloud-init drive already created"

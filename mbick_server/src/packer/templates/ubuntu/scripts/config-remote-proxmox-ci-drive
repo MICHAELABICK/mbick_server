@@ -5,4 +5,4 @@ set -e
 # echo "VM id: $2"
 
 SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
-ssh -T $1 "bash -s" -- < $SRC_DIR/config-proxmox-ci-drive $2
+ssh -T $1 "bash -s" -- < $SRC_DIR/config-proxmox-ci-drive "${@:2}"
