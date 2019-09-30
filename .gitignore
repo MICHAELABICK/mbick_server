@@ -17,6 +17,9 @@ tags
 *.tfstate
 *.tfstate.*
 
+# ignore dhall history file
+.history
+
 *.pyc
 
 *.log
