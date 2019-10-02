@@ -1,9 +1,9 @@
 let AbsoluteFilePath = ./AbsoluteFilePath.dhall
 
-in  { project_dir :
+in  { project :
         AbsoluteFilePath
-    , ansible_dir :
+    , ansible :
         AbsoluteFilePath
-    , ansible_inventory_dir :
+    , ansible_inventory :
         AbsoluteFilePath
     }

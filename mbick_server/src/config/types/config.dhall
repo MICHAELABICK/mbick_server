@@ -3,7 +3,7 @@
 , credentials :
     ./Credentials.dhall
 , apis :
-    ./API.dhall
+    List ./API.dhall
 , gateway :
     ./IPAddress.dhall
 }

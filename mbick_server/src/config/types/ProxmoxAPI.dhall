@@ -1,7 +1,7 @@
-{ proxmox_api_host :
+{ host :
     ./HostAddress.dhall
-, proxmox_api_url :
+, url :
     ./ProxmoxAPIURL.dhall
-, proxmox_api_base_url :
+, base_url :
     ./ProxmoxAPIBaseURL.dhall
 }

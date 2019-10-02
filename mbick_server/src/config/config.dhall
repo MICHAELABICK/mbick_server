@@ -26,11 +26,11 @@ let config =
           ./credentials.dhall
       , apis =
           [ types.API.Proxmox
-            { proxmox_api_host =
+            { host =
                 proxmox_api_host
-            , proxmox_api_base_url =
+            , base_url =
                 proxmoxAPIBaseURL proxmox_api_host
-            , proxmox_api_url =
+            , url =
                 proxmoxAPIURL proxmox_api_host
             }
           ]

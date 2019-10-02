@@ -1,3 +1,3 @@
-< Host : ./Hostname.dhall
+< Host : Text
 | IP : ./IPAddress.dhall
 >

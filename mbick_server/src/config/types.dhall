@@ -8,20 +8,24 @@
     ./types/Credentials.dhall
 , SSHUser =
     ./types/SSHUser.dhall
+, SSHUsername =
+    ./types/SSHUsername.dhall
 , ProxmoxUser =
     ./types/ProxmoxUser.dhall
+, ProxmoxUsername =
+    ./types/ProxmoxUsername.dhall
+, ProxmoxPassword =
+    ./types/ProxmoxPassword.dhall
 , API =
     ./types/API.dhall
 , ProxmoxAPI =
     ./types/ProxmoxAPI.dhall
-, ProxmoxApiURL =
+, ProxmoxAPIURL =
     ./types/ProxmoxAPIURL.dhall
-, ProxmoxApiBaseURL =
+, ProxmoxAPIBaseURL =
     ./types/ProxmoxAPIBaseURL.dhall
 , HostAddress =
     ./types/HostAddress.dhall
-, Hostname =
-    ./types/Hostname.dhall
 , IPAddress =
     ./types/IPAddress.dhall
 }
