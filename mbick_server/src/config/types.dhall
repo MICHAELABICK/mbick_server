@@ -1,29 +1,27 @@
-let Hostname = Text
-let IpAddress = Text
-
-let SshUsername = Text
-let SshUser =
-  { username : SshUsername
-  } : Type
-
-let ProxmoxUsername = Text
-let ProxmoxPassword = Text
-let ProxmoxUser =
-  { username : ProxmoxUsername
-  , password : ProxmoxPassword
-  } : Type
-let ProxmoxApiUrl = Text
-let ProxmoxApiBaseUrl = Text
-
-in
-{ HostAddress = < Host : Hostname | IP : IpAddress >
-, Hostname = Hostname
-, IpAddress = IpAddress
-, SshUser = SshUser
-, SshUsername = SshUsername
-, ProxmoxUser = ProxmoxUser
-, ProxmoxUsername = ProxmoxUsername
-, ProxmoxPassword = ProxmoxPassword
-, ProxmoxApiUrl = ProxmoxApiUrl
-, ProxmoxApiBaseUrl = ProxmoxApiBaseUrl
+{ Config =
+    ./types/Config.dhall
+, ProjectPaths =
+    ./types/ProjectPaths.dhall
+, AbsoluteFilePath =
+    ./types/AbsoluteFilePath.dhall
+, Credentials =
+    ./types/Credentials.dhall
+, SSHUser =
+    ./types/SSHUser.dhall
+, ProxmoxUser =
+    ./types/ProxmoxUser.dhall
+, API =
+    ./types/API.dhall
+, ProxmoxAPI =
+    ./types/ProxmoxAPI.dhall
+, ProxmoxApiURL =
+    ./types/ProxmoxAPIURL.dhall
+, ProxmoxApiBaseURL =
+    ./types/ProxmoxAPIBaseURL.dhall
+, HostAddress =
+    ./types/HostAddress.dhall
+, Hostname =
+    ./types/Hostname.dhall
+, IPAddress =
+    ./types/IPAddress.dhall
 }

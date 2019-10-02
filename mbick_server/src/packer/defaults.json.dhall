@@ -1,6 +1,7 @@
 let Prelude = ../config/Prelude.dhall
 
 let paths = ../paths.dhall
+
 let types = ../config/types.dhall
 let defaults = ../config/defaults.dhall
 let credentials = ../config/credentials.dhall
