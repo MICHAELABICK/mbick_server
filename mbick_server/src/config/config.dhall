@@ -3,7 +3,7 @@ let types = ./types.dhall
 
 let proxmoxAPIBaseURL : types.HostAddress -> types.ProxmoxAPIBaseURL =
       \(host : types.HostAddress)
-  ->  let address : Text =
+  ->  let address =
         merge
         { Host = \(x : Text) -> x
         , IP = \(x : Text) -> x
@@ -12,7 +12,7 @@ let proxmoxAPIBaseURL : types.HostAddress -> types.ProxmoxAPIBaseURL =
       in "https://${address}:8006"
 let proxmoxAPIURL : types.HostAddress -> types.ProxmoxAPIURL =
       \(host : types.HostAddress)
-  ->  let base : Text = proxmoxAPIBaseURL host in "${base}/api2/json"
+  ->  let base = proxmoxAPIBaseURL host in "${base}/api2/json"
 
 
 let project_paths = ../paths.dhall
