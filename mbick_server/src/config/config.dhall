@@ -1,7 +1,7 @@
 let types = ./types.dhall
 
 
-let makeProxmoxAPIBaseURL : types.HostAddress -> types.ProxmoxAPIBaseURL =
+let makeProxmoxAPIBaseURL =
       \(host : types.HostAddress)
   ->  let address =
         merge
@@ -9,11 +9,12 @@ let makeProxmoxAPIBaseURL : types.HostAddress -> types.ProxmoxAPIBaseURL =
         , IP = \(x : Text) -> x
         }
         host
-      in "https://${address}:8006"
+      in "https://${address}:8006" : types.ProxmoxAPIBaseURL
 
-let makeProxmoxAPIURL : types.HostAddress -> types.ProxmoxAPIURL =
+let makeProxmoxAPIURL =
       \(host : types.HostAddress)
-  ->  let base = makeProxmoxAPIBaseURL host in "${base}/api2/json"
+  ->  let base = makeProxmoxAPIBaseURL host
+      in "${base}/api2/json" : types.ProxmoxAPIURL
 
 
 let project_paths = ../paths.dhall
