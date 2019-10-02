@@ -16,6 +16,15 @@ let makeProxmoxAPIURL =
   ->  let base = makeProxmoxAPIBaseURL host
       in "${base}/api2/json" : types.ProxmoxAPIURL
 
+let makeProxmoxAPI =
+      \(host : types.HostAddress)
+  ->  let base_url = makeProxmoxAPIBaseURL host
+      let url      = makeProxmoxAPIURL host
+      in  { host = host
+          , base_url = base_url
+          , url = url
+          } : types.ProxmoxAPI
+
 
 let project_paths = ../paths.dhall
 
@@ -27,14 +36,7 @@ let config =
       , credentials =
           ./credentials.dhall
       , apis =
-          [ types.API.Proxmox
-            { host =
-                proxmox_api_host
-            , base_url =
-                makeProxmoxAPIBaseURL proxmox_api_host
-            , url =
-                makeProxmoxAPIURL proxmox_api_host
-            }
+          [ makeProxmoxAPI proxmox_api_host
           ]
         , gateway = "192.168.11.1"
       }
