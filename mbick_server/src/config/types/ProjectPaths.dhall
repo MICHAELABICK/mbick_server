@@ -1,9 +1,9 @@
-let AbsoluteFilePath = ./AbsoluteFilePath.dhall
+let Location = ../Location.dhall
 
 in  { project :
-        AbsoluteFilePath
+        Location
     , ansible :
-        AbsoluteFilePath
+        Location
     , ansible_inventory :
-        AbsoluteFilePath
+        Location
     }

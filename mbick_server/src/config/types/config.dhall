@@ -2,8 +2,8 @@
     ./ProjectPaths.dhall
 , credentials :
     ./Credentials.dhall
-, apis :
-    List ./API.dhall
+, proxmox_api :
+    ./ProxmoxAPI.dhall
 , gateway :
     ./IPAddress.dhall
 }

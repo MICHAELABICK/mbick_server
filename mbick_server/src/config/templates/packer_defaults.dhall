@@ -1,26 +1,28 @@
-let types = ../types.dhall
+let Location = ../Location.dhall
 
+let types = ../types.dhall
 let config = ../config.dhall
 
 
+let project_paths = config.project_paths
+let proxmox_api = config.proxmox_api
+let credentials = config.credentials
+
 in  { ansible_dir =
-        config.project_paths.ansible
+        project_paths.ansible
     , ansible_inventory_dir =
-        config.project_paths.ansible_inventory
+        project_paths.ansible_inventory
     , proxmox_api_host =
-        defaults.proxmox_api_host
+        proxmox_api.host
     , proxmox_api_url =
-        defaults.proxmox_api_url
+        proxmox_api.url
     , proxmox_user =
         credentials.proxmox_user.username
     , proxmox_password =
         credentials.proxmox_user.password
     } :
-    -- TODO: use Location schema once it is released in Prelude v11
-    -- { ansible_dir : Prelude.Location
-    -- , ansible_inventory_dir : Prelude.Location
-    { ansible_dir : types.AbsoluteFilePath
-    , ansible_inventory_dir : types.AbsoluteFilePath
+    { ansible_dir : Location
+    , ansible_inventory_dir : Location
     , proxmox_api_host : types.HostAddress
     , proxmox_api_url : types.ProxmoxAPIURL
     , proxmox_user : types.ProxmoxUsername

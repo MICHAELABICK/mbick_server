@@ -26,19 +26,15 @@ let makeProxmoxAPI =
           } : types.ProxmoxAPI
 
 
-let project_paths = ../paths.dhall
-
-let proxmox_api_host = types.HostAddress.IP "192.178.11.101"
-
 let config =
       { project_paths =
-          project_paths
+          ../paths.dhall
       , credentials =
           ./credentials.dhall
-      , apis =
-          [ makeProxmoxAPI proxmox_api_host
-          ]
-        , gateway = "192.168.11.1"
+      , proxmox_api =
+          let host = types.HostAddress.IP "192.168.11.101"
+          in makeProxmoxAPI host
+      , gateway = "192.168.11.1"
       }
 
 in config : types.Config

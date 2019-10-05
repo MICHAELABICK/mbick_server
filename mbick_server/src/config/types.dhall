@@ -2,8 +2,6 @@
     ./types/Config.dhall
 , ProjectPaths =
     ./types/ProjectPaths.dhall
-, AbsoluteFilePath =
-    ./types/AbsoluteFilePath.dhall
 , Credentials =
     ./types/Credentials.dhall
 , SSHUser =
@@ -16,8 +14,6 @@
     ./types/ProxmoxUsername.dhall
 , ProxmoxPassword =
     ./types/ProxmoxPassword.dhall
-, API =
-    ./types/API.dhall
 , ProxmoxAPI =
     ./types/ProxmoxAPI.dhall
 , ProxmoxAPIURL =
