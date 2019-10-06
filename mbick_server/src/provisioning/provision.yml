@@ -10,3 +10,9 @@
 - hosts: docker_host
   roles:
     - { role: geerlingguy.docker, become: yes }
+
+- hosts: k3s_node
+  roles:
+    - xanmanning.k3s
+
+

@@ -8,8 +8,9 @@
       become: yes
       apt:
         update_cache: yes
-        # force_apt_get: yes
         cache_valid_time: 3600
+        name:
+          - nfs-common
   tasks:
     # # - debug:
     # #     msg: ansible_user is {{ ansible_user }}
