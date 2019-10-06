@@ -1,0 +1,4 @@
+credentials.dhall
+defaults.env
+
+/src/packer/output*/*

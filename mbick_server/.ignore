@@ -1,0 +1,2 @@
+# include credentials/secrets in grep and other searches
+!credentials.dhall

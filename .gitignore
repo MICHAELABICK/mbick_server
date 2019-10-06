@@ -1,23 +1,25 @@
+.DS_Store
 tags
-/build*
-/.vagrant
+
+**/build/*
+*/.vagrant/*
 
 # Make sure not to save various secure documents
-/ssh*
-defaults.env
+**/ssh/*
 
 # Make sure not to save configs
 *.conf
 
 # do not save various packer files
-packer_cache/
-/packer/output*/
-/packer/build/
+**/packer_cache/*
 
 # do not save various terraform files
-.terraform
+**/.terraform/*
 *.tfstate
 *.tfstate.*
+
+# ignore dhall history file
+.history
 
 *.pyc
 
