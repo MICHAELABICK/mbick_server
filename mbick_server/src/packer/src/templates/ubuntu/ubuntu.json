@@ -85,7 +85,7 @@
       "qemu_agent": true,
 
       "iso_file": "{{user `proxmox_iso_file`}}",
-      "http_directory":"{{user `http_directory`}}",
+      "http_directory": "{{user `http_directory`}}",
       "boot_wait": "10s",
       "boot_command": [
         "{{ user `boot_command_prefix` }}",
@@ -152,7 +152,7 @@
       "keep_input_artifact": true,
       "type": "shell-local",
       "inline": [
-          "{{template_dir}}/scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_api_host`}} -n \"{{user `vm_name`}}\""
+          "{{template_dir}}/../../scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_api_host`}} -n \"{{user `vm_name`}}\""
       ],
       "only": ["proxmox"]
     },
