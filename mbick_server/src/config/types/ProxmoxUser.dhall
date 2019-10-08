@@ -1,3 +1,3 @@
-{ username : ./ProxmoxUsername.dhall
+{ user : ./ProxmoxUsername.dhall
 , password : ./ProxmoxPassword.dhall
 }

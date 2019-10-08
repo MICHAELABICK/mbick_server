@@ -17,7 +17,7 @@ in  { ansible_dir =
     , proxmox_api_url =
         proxmox_api.url
     , proxmox_user =
-        credentials.proxmox_user.username
+        credentials.proxmox_user.user
     , proxmox_password =
         credentials.proxmox_user.password
     } :
