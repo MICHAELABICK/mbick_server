@@ -1,3 +1,6 @@
+let Networking = ../../networking/types.dhall
+
+in
 { name : Text
 , desc : Text
 , target_node : Text
@@ -18,5 +21,7 @@
     , bridge = Text
     }
 , os_type = "cloud-init"
-, ipconfig0 = "ip=${vm.ip},gw=${config.gateway}"
+, ip = Networking.IPAddress
+, subnet = Networking.Subnet
+, gateway = Networking.Gateway
 }
