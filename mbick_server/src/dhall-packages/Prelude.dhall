@@ -1,3 +1,4 @@
+
 {- This file provides a central `Prelude` import for the rest of the library to
    use so that the integrity check only needs to be updated in one place
    whenever upgrading the interpreter.
@@ -13,6 +14,8 @@
    * https://github.com/dhall-lang/dhall-lang/wiki/Safety-guarantees#cross-site-scripting-xss
    This file also provides an import without the integrity check as a slower
    fallback if the user is using a different version of the Dhall interpreter.
+   This pattern is documented in the dhall-nethack repo:
+   * https://github.com/dhall-lang/dhall-nethack/blob/master/Prelude.dhall
 -}
 
   env:DHALL_PRELUDE

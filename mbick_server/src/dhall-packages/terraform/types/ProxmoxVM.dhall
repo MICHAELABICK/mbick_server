@@ -1,27 +1,34 @@
-let Networking = ../../networking/types.dhall
+let networking = ../networking.dhall
 
 in
-{ name : Text
-, desc : Text
-, target_node : Text
-, clone : Text
-, cores : Natural
-, sockets : Natural
-, memory : Natural
-, agent = ./QemuAgent.dhall
-, disk =
-    { id = Natural
-    , type = ./ProxmoxDiskType.dhall
-    , size = Natural
-    , storage = Text
-    }
-, network =
-    { id = Natural
-    , model = ./ProxmoxNetworkModel.dhall
-    , bridge = Text
-    }
-, os_type = "cloud-init"
-, ip = Networking.IPAddress
-, subnet = Networking.Subnet
-, gateway = Networking.Gateway
+{ name :
+    Text
+, desc :
+    Text
+, target_node :
+    Text
+, clone :
+    Text
+, cores :
+    Natural
+, sockets :
+    Natural
+, memory :
+    Natural
+, agent :
+    Bool
+, disks :
+    List ./ProxmoxDisk.dhall
+, networks :
+    List ./ProxmoxNetworkDevice.dhall
+, os_type :
+    ./ProxmoxOSType.dhall
+, ip :
+    networking.types.IPAddress
+, subnet :
+    networking.types.Subnet
+, gateway :
+    networking.types.Gateway
+, provisioners :
+    List ./Provisioner.dhall
 }

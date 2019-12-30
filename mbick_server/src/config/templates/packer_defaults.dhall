@@ -1,5 +1,3 @@
-let Location = ../Location.dhall
-
 let types = ../types.dhall
 let config = ../config.dhall
 

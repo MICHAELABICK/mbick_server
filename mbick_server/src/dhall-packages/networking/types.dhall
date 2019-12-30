@@ -1,7 +1,13 @@
-{ IPAddress :
+{ IPAddress =
     ./types/IPAddress.dhall
-, Subnet :
+, Subnet =
     ./types/Subnet.dhall
-, Gateway :
+, Gateway =
     ./types/Gateway.dhall
+, SSHUser =
+    ./types/SSHUser.dhall
+, SSHUsername =
+    ./types/SSHUsername.dhall
+, HostAddress =
+    ./types/HostAddress.dhall
 }

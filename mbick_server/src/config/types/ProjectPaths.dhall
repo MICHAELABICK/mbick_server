@@ -1,5 +1,3 @@
-let Location = ../Location.dhall
-
 in  { project :
         Location
     , ansible :

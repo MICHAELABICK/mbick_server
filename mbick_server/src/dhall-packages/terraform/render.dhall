@@ -1,0 +1,2 @@
+{ Config = ./render/Config.dhall
+}
