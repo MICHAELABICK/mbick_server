@@ -2,6 +2,14 @@ let Prelude = ./Prelude.dhall
 let Map = Prelude.Map.Type
 let List/map = Prelude.List.map
 
+let ssh_user = "default-user"
+let ssh_host = "7.7.7.7"
+let ansible_dir = "ANSIBLE_DIR"
+let ansible_playbook_command =
+  "ansible-playbook "
+  ++ "--private-key=PRIVATE_KEY "
+  ++ "-i \"INVENTORY_FILE\" "
+
 let types = ./types.dhall
 
 
@@ -46,6 +54,8 @@ let JSONProxmoxVM =
           , agent : Natural
           , disk : List JSONProxmoxDisk
           , network : List JSONProxmoxDevice
+          , os_type : Text
+          , ipconfig0 : Text
           , ciuser : Text
           , sshkeys : Text
           , provisioner : List JSONProvisioner
@@ -58,7 +68,7 @@ let toQemuAgentEnable =
   ->  if enable then 1 else 0 : Natural
 
 let toResource =
-      \(vm : types.ProxmoxVM)
+      \(vm : types.ProxmoxVM.Type)
   ->  { mapKey = vm.name
       , mapValue =
           { name = vm.name
@@ -82,14 +92,47 @@ let toResource =
                 , bridge = "vmbr0"
                 }
               ]
+          , os_type = "cloud-init"
+          , ipconfig0 =
+              "ip=${vm.ip}/${Natural/show vm.subnet.mask},"
+              ++ "gw=GATEWAY"
           , ciuser = "TODO"
           , sshkeys = "TODO"
           , provisioner =
               [ JSONProvisioner.LocalExec
                 { local-exec =
-                    { command = "TODO"
+                    { command = "ssh-keygen -R ${ssh_host}"
                     , environment = [] : Map Text Text
                     , when = None Text
+                    }
+                }
+              , JSONProvisioner.LocalExec
+                { local-exec =
+                    { command =
+                        ansible_playbook_command
+                        ++ "--limit \"${vm.name}\" "
+                        ++ "-e \"ansible_user=${ssh_user}\" "
+                        ++ " \"${ansible_dir}/manage_users.yml\""
+                    , environment =
+                        toMap { ANSIBLE_HOST_KEY_CHECKING = "false" }
+                    , when = None Text
+                    }
+                }
+              , JSONProvisioner.LocalExec
+                { local-exec =
+                    { command =
+                        ansible_playbook_command
+                        ++ "--limit \"${vm.name}\" "
+                        ++ " \"${ansible_dir}/provision.yml\""
+                    , environment = [] : Map Text Text
+                    , when = None Text
+                    }
+                }
+              , JSONProvisioner.LocalExec
+                { local-exec =
+                    { command = "ssh-keygen -R ${ssh_host}"
+                    , environment = [] : Map Text Text
+                    , when = Some "destroy"
                     }
                 }
               ]
@@ -98,7 +141,7 @@ let toResource =
       : JSONProxmoxVM
 
 let toTerraform =
-      \(vms : List types.ProxmoxVM)
+      \(vms : List types.ProxmoxVM.Type)
   ->  { provider =
           { pm_tls_insecure = True
           , pm_api_url = "https://proxmox-server01.example.com:8006/api2/json"
@@ -108,7 +151,7 @@ let toTerraform =
       , resource =
           { proxmox_vm_qemu =
               List/map
-              types.ProxmoxVM
+              types.ProxmoxVM.Type
               JSONProxmoxVM
               toResource
               vms
@@ -117,14 +160,12 @@ let toTerraform =
 
 
 let test_resource =
+      types.ProxmoxVM::
       { name = "kube-dev01"
       , desc = "I don't think this works yet"
       , target_node = "node1"
       , clone = "ubuntu-bionic-1570324283"
-      , cores = 2
-      , sockets = 1
       , memory = 4096
-      , agent = True
       , disk_gb = 20
       , ip = "192.168.11.120"
       , subnet =
@@ -135,8 +176,10 @@ let test_resource =
       }
 
 
-in
-{ kube-dev =
-    toTerraform
-    [ test_resource ]
+in {
+, kube_dev =
+    toTerraform [
+    , test_resource
+    -- , test_resource // { name = "kube-dev02" }
+    ]
 }
