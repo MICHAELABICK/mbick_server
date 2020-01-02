@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# make temp directory
+tmp_dir=$(mktemp -d -t 'mbick-tf')
+
+# get source directory of this script
+SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+
+
+for filename in $PWD/*.tf.json.dhall; do
+    (set -x; dhall-to-json --pretty --omit-empty --file "$filename")
+done
+
+rm -rf $tmp_dir

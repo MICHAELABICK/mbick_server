@@ -1,4 +1,4 @@
-let networking = ../networking.dhall
+let networking = ../../networking/package.dhall
 
 in
 { name :
@@ -17,18 +17,12 @@ in
     Natural
 , agent :
     Bool
-, disks :
-    List ./ProxmoxDisk.dhall
-, networks :
-    List ./ProxmoxNetworkDevice.dhall
-, os_type :
-    ./ProxmoxOSType.dhall
+, disk_gb :
+    Natural
 , ip :
     networking.types.IPAddress
 , subnet :
     networking.types.Subnet
 , gateway :
     networking.types.Gateway
-, provisioners :
-    List ./Provisioner.dhall
 }

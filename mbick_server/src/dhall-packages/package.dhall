@@ -2,6 +2,6 @@
     ./Prelude.dhall
 , networking =
     ./networking/package.dhall
-, terraform =
-    ./terraform/package.dhall
+, mbick-server =
+    ./mbick-server/package.dhall
 }

@@ -1,0 +1,3 @@
+{ ProxmoxVM =
+    ./types/ProxmoxVM.dhall
+}
