@@ -166,9 +166,9 @@ let toTerraform =
       \(vms : List types.ProxmoxVM.Type)
   ->  { provider =
           { pm_tls_insecure = True
-          , pm_api_url = "https://proxmox-server01.example.com:8006/api2/json"
-          , pm_password = "secret"
-          , pm_user = "terraform-user@pve"
+          , pm_api_url = config.proxmox_api.url
+          , pm_password = config.credentials.proxmox_user.password
+          , pm_user = config.credentials.proxmox_user.name
           }
       , resource =
           { proxmox_vm_qemu =
