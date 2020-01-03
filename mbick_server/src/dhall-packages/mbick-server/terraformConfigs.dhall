@@ -1,16 +1,37 @@
 let Prelude = ./Prelude.dhall
 let Map = Prelude.Map.Type
 let List/map = Prelude.List.map
-
-let ssh_user = "default-user"
-let ssh_host = "7.7.7.7"
-let ansible_dir = "ANSIBLE_DIR"
-let ansible_playbook_command =
-  "ansible-playbook "
-  ++ "--private-key=PRIVATE_KEY "
-  ++ "-i \"INVENTORY_FILE\" "
+let Location = Prelude.Location.Type
 
 let types = ./types.dhall
+let config = ./config.dhall
+
+let default_user = "provision"
+let ssh_host = "7.7.7.7"
+let ansible_dir = "ANSIBLE_DIR"
+
+let renderAbsolutePath =
+      \(loc : Location)
+  ->  merge {
+      , Local =
+          \(x : Text) -> x
+      , Remote =
+          \(x : Text) -> ""
+      , Environment =
+          \(x : Text) -> ""
+      , Missing = ""
+      }
+      loc
+
+let renderAnsiblePlaybookPath =
+      \(playbook : Text)
+  ->  let playbook_dir =
+            renderAbsolutePath config.project_paths.ansible.playbooks
+      in "${playbook_dir}/${playbook}"
+
+let ansible_playbook_command =
+  "ansible-playbook "
+  ++ "-i \"${renderAbsolutePath config.project_paths.ansible.inventory}\" "
 
 
 let JSONProxmoxDisk =
@@ -95,13 +116,13 @@ let toResource =
           , os_type = "cloud-init"
           , ipconfig0 =
               "ip=${vm.ip}/${Natural/show vm.subnet.mask},"
-              ++ "gw=GATEWAY"
-          , ciuser = "TODO"
+              ++ "gw=${config.gateway}"
+          , ciuser = default_user
           , sshkeys = "TODO"
           , provisioner =
               [ JSONProvisioner.LocalExec
                 { local-exec =
-                    { command = "ssh-keygen -R ${ssh_host}"
+                    { command = "ssh-keygen -R ${vm.ip}"
                     , environment = [] : Map Text Text
                     , when = None Text
                     }
@@ -111,8 +132,9 @@ let toResource =
                     { command =
                         ansible_playbook_command
                         ++ "--limit \"${vm.name}\" "
-                        ++ "-e \"ansible_user=${ssh_user}\" "
-                        ++ " \"${ansible_dir}/manage_users.yml\""
+                        ++ "-e \"ansible_user=${default_user}\" "
+                        ++ "--private-key=PRIVATE_KEY "
+                        ++ "\"${renderAnsiblePlaybookPath "manage_users.yml"}\""
                     , environment =
                         toMap { ANSIBLE_HOST_KEY_CHECKING = "false" }
                     , when = None Text
@@ -123,14 +145,14 @@ let toResource =
                     { command =
                         ansible_playbook_command
                         ++ "--limit \"${vm.name}\" "
-                        ++ " \"${ansible_dir}/provision.yml\""
+                        ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
                     , environment = [] : Map Text Text
                     , when = None Text
                     }
                 }
               , JSONProvisioner.LocalExec
                 { local-exec =
-                    { command = "ssh-keygen -R ${ssh_host}"
+                    { command = "ssh-keygen -R ${vm.ip}"
                     , environment = [] : Map Text Text
                     , when = Some "destroy"
                     }
@@ -172,7 +194,7 @@ let test_resource =
           { ip = "192.168.11.0"
           , mask = 24
           }
-      , gateway = "192.168.11.1"
+      , gateway = config.gateway
       }
 
 
