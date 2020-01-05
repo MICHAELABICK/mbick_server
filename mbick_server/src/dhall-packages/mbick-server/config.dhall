@@ -30,11 +30,10 @@ let toProxmoxAPI =
 let config =
       { project_paths =
           ../../paths2.dhall
-      , credentials =
-          ./credentials.dhall
       , proxmox_api =
           toProxmoxAPI (networking.types.HostAddress.IP "192.168.11.101")
       , gateway = "192.168.11.1"
+      , vault_address = (networking.types.HostAddress.IP "192.168.11.104")
       }
 
 in config : types.Config
