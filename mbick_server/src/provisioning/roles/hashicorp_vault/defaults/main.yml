@@ -1,0 +1,10 @@
+hashicorp_vault_dir: /usr/local/bin
+hashicorp_vault_path: "{{ hashicorp_vault_dir }}/vault"
+
+hashicorp_vault_user: vault
+hashicorp_vault_group: vault
+
+hashicorp_vault_config_dir: /etc/vault.d
+hashicorp_vault_config_path: "{{ hashicorp_vault_config_dir }}/vault.hcl"
+
+hashicorp_vault_data_dir: /mnt/vault/data

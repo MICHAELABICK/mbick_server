@@ -1,0 +1,90 @@
+---
+# - name: Wait for automatic system updates
+#   become: yes
+#   shell: while sudo fuser /var/lib/dpkg/{{ item }} >/dev/null 2>&1; do sleep 1; done;
+#   loop:
+#     - lock
+#     - lock-frontend
+
+- name: Install installation dependencies
+  become: yes
+  package:
+    name:
+      - unzip
+    state: present
+
+- name: Extract Hashicorp Vault
+  become: yes
+  vars:
+    version: "{{ hashicorp_vault_version }}"
+  unarchive:
+    src: "https://releases.hashicorp.com/vault/{{ version }}/vault_{{ version }}_linux_amd64.zip"
+    dest: "{{ hashicorp_vault_dir }}"
+    owner: root
+    group: root
+    remote_src: yes
+  args:
+    creates: "{{ hashicorp_vault_path }}"
+
+# - name: Enable autocompletion
+#   shell: vault -autocomplete-install || complete -C /usr/local/bin/vault vault
+
+- name: Set capabilities
+  become: yes
+  capabilities:
+    path: "{{ hashicorp_vault_path }}"
+    capability: cap_ipc_lock=+ep
+    state: present
+
+- name: Add group
+  become: yes
+  group:
+    name: "{{ hashicorp_vault_group }}"
+    state: present
+
+- name: Add user
+  become: yes
+  user:
+    name: "{{ hashicorp_vault_user }}"
+    group: "{{ hashicorp_vault_group }}"
+    home: "{{ hashicorp_vault_config_dir }}"
+    state: present
+    system: yes
+
+- name: Add systemd service file
+  become: yes
+  template:
+    src: ../templates/vault.service
+    dest: /etc/systemd/system/vault.service
+
+- name: Add config file
+  become: yes
+  template:
+    src: ../templates/config.hcl
+    dest: "{{ hashicorp_vault_config_path }}"
+    mode: "644"
+
+- name: Set config directory ownership
+  become: yes
+  file:
+    dest: "{{ hashicorp_vault_config_dir }}"
+    owner: "{{ hashicorp_vault_user }}"
+    group: "{{ hashicorp_vault_group }}"
+    state: directory
+    recurse: yes
+
+- name: Create mount directory
+  become: yes
+  file:
+    dest: "{{ hashicorp_vault_data_dir }}"
+    owner: "{{ hashicorp_vault_user }}"
+    group: "{{ hashicorp_vault_group }}"
+    state: directory
+    recurse: yes
+
+- name: Enable and start service
+  become: yes
+  service:
+    name: vault
+    state: started
+    enabled: yes
