@@ -9,5 +9,9 @@
 , SSHUsername =
     ./types/SSHUsername.dhall
 , HostAddress =
-    ./types/HostAddress.dhall
+    ./types/HostAddress/Type.dhall
+, HostURL =
+    ./types/HostURL/Type.dhall
+, Protocol=
+    ./types/Protocol.dhall
 }

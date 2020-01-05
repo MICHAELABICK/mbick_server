@@ -1,4 +1,4 @@
-let networking = ../../networking/package.dhall
+let networking = ../../networking/types.dhall
 
 in
 { Type =
@@ -21,11 +21,11 @@ in
     , disk_gb :
         Natural
     , ip :
-        networking.types.IPAddress
+        networking.IPAddress
     , subnet :
-        networking.types.Subnet
+        networking.Subnet
     , gateway :
-        networking.types.Gateway
+        networking.Gateway
     }
 , default = {
     , cores = 2

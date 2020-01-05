@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+eval $(dhall-to-bash --declare address <<< 'let packages = ./packages.dhall in packages.mbick-server.vault_login.address')
+eval $(dhall-to-bash --declare method <<< 'let packages = ./packages.dhall in packages.mbick-server.vault_login.method')
+eval $(dhall-to-bash --declare method_kv <<< 'let packages = ./packages.dhall in packages.mbick-server.vault_login.method_kv')
+
+# in the future, we could possibly source this script so that
+# VAULT_ADDR can be set
+# export VAULT_ADDR="${adress}"
+
+cmd="vault login "
+cmd+="-address=${address} "
+cmd+="-method=${method}"
+
+for key in ${!method_kv[@]}; do
+    cmd+=" ${key}=${method_kv[${key}]}"
+done
+
+set -o xtrace
+eval "${cmd}"
+set +o xtrace

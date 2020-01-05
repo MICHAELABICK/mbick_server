@@ -167,8 +167,10 @@ let toTerraform =
   ->  { provider =
           { pm_tls_insecure = True
           , pm_api_url = config.proxmox_api.url
-          , pm_password = config.credentials.proxmox_user.password
-          , pm_user = config.credentials.proxmox_user.name
+          -- , pm_password = config.credentials.proxmox_user.password
+          -- , pm_user = config.credentials.proxmox_user.name
+          , pm_password = "CHANGETHIS"
+          , pm_user = "CHANGETHIS"
           }
       , resource =
           { proxmox_vm_qemu =

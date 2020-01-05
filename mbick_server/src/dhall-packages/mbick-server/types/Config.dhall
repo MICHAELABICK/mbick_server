@@ -7,6 +7,6 @@ in {
     ./ProxmoxAPI.dhall
 , gateway :
     networking.IPAddress
-, vault_address :
-    networking.HostAddress
+, vault_api :
+    ./HashicorpVaultAPI.dhall
 }

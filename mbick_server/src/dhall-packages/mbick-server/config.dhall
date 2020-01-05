@@ -3,7 +3,7 @@ let networking = ../networking/package.dhall
 
 
 let toProxmoxAPIBaseURL =
-      \(host : networking.types.HostAddress)
+      \(host : networking.HostAddress.Type)
   ->  let address =
         merge
         { Host = \(x : Text) -> x
@@ -13,12 +13,12 @@ let toProxmoxAPIBaseURL =
       in "https://${address}:8006"
 
 let toProxmoxAPIURL =
-      \(host : networking.types.HostAddress)
+      \(host : networking.HostAddress.Type)
   ->  let base = toProxmoxAPIBaseURL host
       in "${base}/api2/json"
 
 let toProxmoxAPI =
-      \(host : networking.types.HostAddress)
+      \(host : networking.HostAddress.Type)
   ->  let base_url = toProxmoxAPIBaseURL host
       let url      = toProxmoxAPIURL host
       in  { host = host
@@ -31,9 +31,15 @@ let config =
       { project_paths =
           ../../paths2.dhall
       , proxmox_api =
-          toProxmoxAPI (networking.types.HostAddress.IP "192.168.11.101")
+          toProxmoxAPI (networking.HostAddress.Type.IP "192.168.11.101")
       , gateway = "192.168.11.1"
-      , vault_address = (networking.types.HostAddress.IP "192.168.11.104")
+      , vault_api = {
+          , address = {
+            , protocol = networking.Protocol.HTTP
+            , host = networking.HostAddress.Type.IP "192.168.11.104"
+            , port = Some 8200
+            }
+          }
       }
 
 in config : types.Config
