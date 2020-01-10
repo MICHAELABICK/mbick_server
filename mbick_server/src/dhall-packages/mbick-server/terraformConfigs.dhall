@@ -6,9 +6,8 @@ let Location = Prelude.Location.Type
 let types = ./types.dhall
 let config = ./config.dhall
 
-let default_user = "provision"
-let ssh_host = "7.7.7.7"
-let ansible_dir = "ANSIBLE_DIR"
+let networking = ../networking/package.dhall
+let HostURL/show = networking.HostURL.show
 
 let renderAbsolutePath =
       \(loc : Location)
@@ -117,46 +116,54 @@ let toResource =
           , ipconfig0 =
               "ip=${vm.ip}/${Natural/show vm.subnet.mask},"
               ++ "gw=${config.gateway}"
-          , ciuser = default_user
-          , sshkeys = "TODO"
-          , provisioner =
-              [ JSONProvisioner.LocalExec
-                { local-exec =
-                    { command = "ssh-keygen -R ${vm.ip}"
-                    , environment = [] : Map Text Text
-                    , when = None Text
-                    }
+          , ciuser =
+              "\${data.vault_generic_secret.default_user.data[\"username\"]}"
+          , sshkeys =
+              ''
+              ''${data.vault_generic_secret.default_user.data["public_key"]}
+              ''
+          , provisioner = [
+              , JSONProvisioner.RemoteExec
+                { remote-exec =
+                    { inline = [ "ip a" ] }
                 }
-              , JSONProvisioner.LocalExec
-                { local-exec =
-                    { command =
-                        ansible_playbook_command
-                        ++ "--limit \"${vm.name}\" "
-                        ++ "-e \"ansible_user=${default_user}\" "
-                        ++ "--private-key=PRIVATE_KEY "
-                        ++ "\"${renderAnsiblePlaybookPath "manage_users.yml"}\""
-                    , environment =
-                        toMap { ANSIBLE_HOST_KEY_CHECKING = "false" }
-                    , when = None Text
-                    }
-                }
-              , JSONProvisioner.LocalExec
-                { local-exec =
-                    { command =
-                        ansible_playbook_command
-                        ++ "--limit \"${vm.name}\" "
-                        ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
-                    , environment = [] : Map Text Text
-                    , when = None Text
-                    }
-                }
-              , JSONProvisioner.LocalExec
-                { local-exec =
-                    { command = "ssh-keygen -R ${vm.ip}"
-                    , environment = [] : Map Text Text
-                    , when = Some "destroy"
-                    }
-                }
+              -- , JSONProvisioner.LocalExec
+              --   { local-exec =
+              --       { command = "ssh-keygen -R ${vm.ip}"
+              --       , environment = [] : Map Text Text
+              --       , when = None Text
+              --       }
+              --   }
+              -- , JSONProvisioner.LocalExec
+              --   { local-exec =
+              --       { command =
+              --           ansible_playbook_command
+              --           ++ "--limit \"${vm.name}\" "
+              --           ++ "-e \"ansible_user=${default_user}\" "
+              --           ++ "--private-key=PRIVATE_KEY "
+              --           ++ "\"${renderAnsiblePlaybookPath "manage_users.yml"}\""
+              --       , environment =
+              --           toMap { ANSIBLE_HOST_KEY_CHECKING = "false" }
+              --       , when = None Text
+              --       }
+              --   }
+              -- , JSONProvisioner.LocalExec
+              --   { local-exec =
+              --       { command =
+              --           ansible_playbook_command
+              --           ++ "--limit \"${vm.name}\" "
+              --           ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
+              --       , environment = [] : Map Text Text
+              --       , when = None Text
+              --       }
+              --   }
+              -- , JSONProvisioner.LocalExec
+              --   { local-exec =
+              --       { command = "ssh-keygen -R ${vm.ip}"
+              --       , environment = [] : Map Text Text
+              --       , when = Some "destroy"
+              --       }
+              --   }
               ]
           }
       }
@@ -164,13 +171,21 @@ let toResource =
 
 let toTerraform =
       \(vms : List types.ProxmoxVM.Type)
-  ->  { provider =
-          { pm_tls_insecure = True
-          , pm_api_url = config.proxmox_api.url
-          -- , pm_password = config.credentials.proxmox_user.password
-          -- , pm_user = config.credentials.proxmox_user.name
-          , pm_password = "CHANGETHIS"
-          , pm_user = "CHANGETHIS"
+  ->  { provider = {
+          , vault = { address = HostURL/show config.vault_api.address }
+          , proxmox = {
+              , pm_tls_insecure = True
+              , pm_api_url = config.proxmox_api.url
+              , pm_password =
+                  "\${data.vault_generic_secret.proxmox_user.data[\"password\"]}"
+              , pm_user = "vm-admin"
+              }
+          }
+      , data = {
+          , vault_generic_secret = {
+              , proxmox_user = { path = "proxmox_user/vm-admin" }
+              , default_user = { path = "secret/default_user" }
+              }
           }
       , resource =
           { proxmox_vm_qemu =
@@ -191,7 +206,7 @@ let test_resource =
       , clone = "ubuntu-bionic-1570324283"
       , memory = 4096
       , disk_gb = 20
-      , ip = "192.168.11.120"
+      , ip = "192.168.11.130"
       , subnet =
           { ip = "192.168.11.0"
           , mask = 24
