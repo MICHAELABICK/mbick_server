@@ -6,9 +6,6 @@ init_dir="${config_dir}/.terraform"
 # make temp directory
 tmp_dir=$(mktemp -d -t 'mbick-tf')
 
-# get source directory of this script
-SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
-
 # symlink .terraform directory if it exists
 if [ -d "${init_dir}" ]; then
     (set -x; ln -s "${init_dir}" "${tmp_dir}/.terraform")

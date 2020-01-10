@@ -120,7 +120,7 @@ let toResource =
               "\${data.vault_generic_secret.default_user.data[\"username\"]}"
           , sshkeys =
               ''
-              ''${data.vault_generic_secret.default_user.data["public_key"]}
+              ''${chomp(data.vault_generic_secret.default_user.data["public_key"])}
               ''
           , provisioner = [
               , JSONProvisioner.RemoteExec
@@ -178,12 +178,12 @@ let toTerraform =
               , pm_api_url = config.proxmox_api.url
               , pm_password =
                   "\${data.vault_generic_secret.proxmox_user.data[\"password\"]}"
-              , pm_user = "vm-admin"
+              , pm_user = "terraform@pve"
               }
           }
       , data = {
           , vault_generic_secret = {
-              , proxmox_user = { path = "proxmox_user/vm-admin" }
+              , proxmox_user = { path = "proxmox_user/terraform" }
               , default_user = { path = "secret/default_user" }
               }
           }
