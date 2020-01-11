@@ -1,41 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-config_dir="${PWD}"
-init_dir="${config_dir}/.terraform"
-
-# make temp directory
-tmp_dir=$(mktemp -d -t 'mbick-tf')
-
-# symlink .terraform directory if it exists
-if [ -d "${init_dir}" ]; then
-    (set -x; ln -s "${init_dir}" "${tmp_dir}/.terraform")
-fi
-
-
-for filename in $PWD/*.tf.json.dhall; do
-    (set -x; dhall-to-json --pretty --omit-empty --file "$filename" --output "${tmp_dir}/$(basename ${filename} .dhall)")
-done
-
-# execute the terraform command in the temp directory
-cd "${tmp_dir}"
-export tf_cmd=$1
-shift
-
-tf_args=""
-if [ "${tf_cmd}" = "plan" ]; then
-    tf_args+="-state=${config_dir}/terraform.tfstate"
-fi
-
-if [ "${tf_args}" = "" ]; then
-    (set -x; exec "terraform" "${tf_cmd}" "$@")
-else
-    (set -x; exec "terraform" "${tf_cmd}" "${tf_args}" "$@")
-fi
-
-
-# copy .terraform directory if it does not exist
-if [ ! -d "${init_dir}" ]; then
-    (set -x; cp -r "${tmp_dir}/.terraform" "${config_dir}/")
-fi
-
-rm -rf $tmp_dir
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+exec "${DIR}/mbick-tf.py" "$@"
