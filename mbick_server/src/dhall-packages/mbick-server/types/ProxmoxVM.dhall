@@ -4,8 +4,8 @@ in
 { Type =
     { name :
         Text
-    , desc :
-        Text
+    , groups :
+        List Text
     , target_node :
         Text
     , clone :

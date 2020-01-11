@@ -2,6 +2,7 @@ let Prelude = ./Prelude.dhall
 let Map = Prelude.Map.Type
 let List/map = Prelude.List.map
 let Location = Prelude.Location.Type
+let JSON = Prelude.JSON
 
 let types = ./types.dhall
 let config = ./config.dhall
@@ -92,7 +93,26 @@ let toResource =
   ->  { mapKey = vm.name
       , mapValue =
           { name = vm.name
-          , desc = vm.desc
+          , desc =
+              JSON.render
+              ( JSON.object
+                [ { mapKey = "groups"
+                  , mapValue =
+                      JSON.array
+                      ( List/map
+                        Text
+                        JSON.Type
+                        JSON.string
+                        ( [ "proxmox_vm"
+                          , "cloud_init"
+                          , "terraform_managed"
+                          ]
+                          # vm.groups
+                        )
+                      )
+                  }
+                ]
+              )
           , target_node = vm.target_node
           , clone = vm.clone
           , cores = vm.cores
@@ -201,7 +221,11 @@ let toTerraform =
 let test_resource =
       types.ProxmoxVM::
       { name = "kube-dev01"
-      , desc = "I don't think this works yet"
+      -- , desc = "I don't think this works yet"
+      , groups = [
+          , "ubuntu_bionic"
+          , "k3s_control_node"
+          ]
       , target_node = "node1"
       , clone = "ubuntu-bionic-1570324283"
       , memory = 4096
