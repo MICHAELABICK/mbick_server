@@ -1,21 +1,11 @@
 #!/usr/bin/env bash
 
-eval $(dhall-to-bash --declare address <<< 'let packages = ./packages.dhall in packages.mbick-server.vault_login.address')
-eval $(dhall-to-bash --declare method <<< 'let packages = ./packages.dhall in packages.mbick-server.vault_login.method')
-eval $(dhall-to-bash --declare method_kv <<< 'let packages = ./packages.dhall in packages.mbick-server.vault_login.method_kv')
+SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 
 # in the future, we could possibly source this script so that
 # VAULT_ADDR can be set
 # export VAULT_ADDR="${adress}"
 
-cmd="vault login "
-cmd+="-address=${address} "
-cmd+="-method=${method}"
-
-for key in ${!method_kv[@]}; do
-    cmd+=" ${key}=${method_kv[${key}]}"
-done
-
-set -o xtrace
-eval "${cmd}"
-set +o xtrace
+eval $(dhall-to-bash --declare LOGIN_CMD <<< "let packages = ${SRC_DIR}/packages.dhall in packages.mbick-server.vault.login")
+echo "${LOGIN_CMD}"
+eval $LOGIN_CMD
