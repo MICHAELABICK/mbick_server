@@ -17,6 +17,13 @@ let show =
             Text
             (\(x : Natural) -> ":${Natural/show x}")
             ""
-        in "${protocol}://${HostAddress/show url.host}${port}"
+      let endpoint =
+            Optional/fold
+            Text
+            url.endpoint
+            Text
+            (\(x : Text ) -> "/${x}")
+            ""
+      in "${protocol}://${HostAddress/show url.host}${port}${endpoint}"
 
 in show

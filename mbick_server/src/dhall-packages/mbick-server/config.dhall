@@ -1,6 +1,8 @@
 let types = ./types.dhall
 let networking = ../networking/package.dhall
 
+let HostURL = networking.HostURL
+
 
 let toProxmoxAPIBaseURL =
       \(host : networking.HostAddress.Type)
@@ -34,10 +36,12 @@ let config =
           toProxmoxAPI (networking.HostAddress.Type.IP "192.168.11.101")
       , gateway = "192.168.11.1"
       , vault_api = {
-          , address = {
+          , address =
+            HostURL::{
             , protocol = networking.Protocol.HTTP
             , host = networking.HostAddress.Type.IP "192.168.11.104"
             , port = Some 8200
+            -- , endpoint = None Text
             }
           }
       }

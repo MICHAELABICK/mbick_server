@@ -5,4 +5,6 @@
     ../HostAddress/Type.dhall
 , port :
     Optional Natural
+, endpoint :
+    Optional Text
 }

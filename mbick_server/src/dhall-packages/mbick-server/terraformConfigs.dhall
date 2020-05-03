@@ -47,6 +47,13 @@ let JSONProxmoxDevice =
       , bridge : Text
       }
 
+let JSONConnection =
+      { type : Text
+      , user : Text
+      , private_key : Text
+      , host : Text
+      }
+
 let JSONProvisioner =
       < LocalExec :
           { local-exec :
@@ -77,6 +84,7 @@ let JSONProxmoxVM =
           , network : List JSONProxmoxDevice
           , os_type : Text
           , ipconfig0 : Text
+          , connection : List JSONConnection
           , ciuser : Text
           , sshkeys : Text
           , provisioner : List JSONProvisioner
@@ -93,6 +101,11 @@ let toResource =
   ->  { mapKey = vm.name
       , mapValue =
           { name = vm.name
+          -- , connection =
+          --     { type = "ssh"
+          --     , user = 
+          --         "\${data.vault_generic_secret.default_user.data[\"username\"]}"
+          --     , host = vm.ip
           , desc =
               JSON.render
               ( JSON.object
@@ -136,16 +149,31 @@ let toResource =
           , ipconfig0 =
               "ip=${vm.ip}/${Natural/show vm.subnet.mask},"
               ++ "gw=${config.gateway}"
+          , connection =
+              [ { type = "ssh"
+                , user =
+                    "\${data.vault_generic_secret.default_user.data[\"username\"]}"
+                , private_key =
+                    "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
+                , host = vm.ip
+                }
+              ]
           , ciuser =
               "\${data.vault_generic_secret.default_user.data[\"username\"]}"
           , sshkeys =
-              ''
-              ''${chomp(data.vault_generic_secret.default_user.data["public_key"])}
-              ''
+              "\${data.vault_generic_secret.default_user.data[\"public_key\"]}"
+              -- -- Was having problems with my Emacs syntax highlighting,
+              -- -- but the following is a more useful version of the above
+              -- ''
+              -- ''${chomp(data.vault_generic_secret.default_user.data["public_key"])}
+              -- ''
           , provisioner = [
               , JSONProvisioner.RemoteExec
                 { remote-exec =
-                    { inline = [ "ip a" ] }
+                    { inline = [
+                        "echo \"Connection to ${vm.ip} established\""
+                      ]
+                    }
                 }
               -- , JSONProvisioner.LocalExec
               --   { local-exec =
@@ -198,7 +226,8 @@ let toTerraform =
               , pm_api_url = config.proxmox_api.url
               , pm_password =
                   "\${data.vault_generic_secret.proxmox_user.data[\"password\"]}"
-              , pm_user = "terraform@pve"
+              , pm_user =
+                  "\${data.vault_generic_secret.proxmox_user.data[\"username\"]}"
               }
           }
       , data = {
@@ -228,6 +257,7 @@ let test_resource =
           ]
       , target_node = "node1"
       , clone = "ubuntu-bionic-1570324283"
+      , cores = 2
       , memory = 4096
       , disk_gb = 20
       , ip = "192.168.11.130"

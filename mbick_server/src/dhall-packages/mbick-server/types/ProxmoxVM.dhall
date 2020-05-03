@@ -28,7 +28,7 @@ in
         networking.Gateway
     }
 , default = {
-    , cores = 2
+    , cores = 1
     , sockets = 1
     , agent = True
     }
