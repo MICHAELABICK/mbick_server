@@ -8,8 +8,8 @@
 
     "proxmox_api_host": null,
     "proxmox_api_url": null,
-    "proxmox_user": null,
-    "proxmox_password": null,
+    "proxmox_user": "{{ vault `/proxmox_user/data/packer` `username` }}",
+    "proxmox_password": "{{ vault `/proxmox_user/data/packer` `password` }}",
 
     "ubuntu_release": "bionic",
     "virtualbox_guest_os_type": "Ubuntu_64",
@@ -99,7 +99,9 @@
       "ssh_username": "{{ user `ssh_username` }}",
 
       "unmount_iso": true,
-      "template_description": "Ubuntu 18.04.02, generated on {{ isotime \"2006-01-02T15:04:05Z\" }}"
+      "template_description": "Ubuntu 18.04.02, generated on {{ isotime \"2006-01-02T15:04:05Z\" }}",
+
+      "cloud_init": true
     },
     {
       "type": "virtualbox-iso",
@@ -134,8 +136,6 @@
       "extra_arguments": [
         "-i",
         "{{user `ansible_inventory_dir`}}/group_inventory",
-        "-i",
-        "{{user `ansible_inventory_dir`}}/defaults",
         "-e",
         "ansible_become_password={{user `ssh_password`}}"
       ],
@@ -148,14 +148,6 @@
     }
   ],
   "post-processors": [
-    {
-      "keep_input_artifact": true,
-      "type": "shell-local",
-      "inline": [
-          "{{template_dir}}/../../scripts/config-remote-proxmox-ci-drive root@{{user `proxmox_api_host`}} -n \"{{user `vm_name`}}\""
-      ],
-      "only": ["proxmox"]
-    },
     {
       "keep_input_artifact": false,
       "output": "box/{{.Provider}}/{{user `vm_name`}}.box",

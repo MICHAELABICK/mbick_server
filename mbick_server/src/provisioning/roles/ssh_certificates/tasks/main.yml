@@ -1,0 +1,22 @@
+- name: Read JSON from dhall config
+  connection: local
+  shell: >
+      dhall-to-json <<< \
+        'let packages = {{ playbook_dir }}/../packages.dhall
+        let HostURL/show = packages.networking.HostURL.show
+        in HostURL/show packages.mbick-server.config.vault_api.address'
+  register: vault_address_json
+
+- name: Get the trusted user public key
+  become: yes
+  get_url:
+    url: "{{ vault_address_json.stdout | from_json }}/v1/ssh/public_key"
+    dest: /etc/ssh/trusted-user-ca-keys.pem
+
+- name: Set the TrustedUserCAKeys
+  become: yes
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^TrustedUserCAKeys'
+    line: TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem
+  notify: restart ssh

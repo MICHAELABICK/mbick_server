@@ -4,6 +4,7 @@ TEMPLATE_DIR := $(SRC_DIR)/templates
 TEMPLATE_BUILD_DIR := $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(TEMPLATE_DIR))
 PACKER_DEV_BUILDERS := virtualbox-iso
 
+vault_address := $(shell dhall-to-bash <<< 'let packages =./packages.dhall in packages.networking.HostURL.show packages.mbick-server.config.vault_api.address')
 local_host_ip := $(shell ifconfig `route get 192.168.11.1 | grep "interface: " | sed "s/[^:]*: \(.*\)/\1/"` | grep "inet " | sed "s/.*inet \([0-9.]*\) .*/\1/")
 
 templates := $(wildcard $(TEMPLATE_DIR)/**/*.json)
@@ -34,7 +35,9 @@ clean-all: clean
 # dependencies on provisioners and scripts
 # TODO: include script dependencies
 $(TEMPLATE_DIR)/%.bake: $(TEMPLATE_BUILD_DIR)/%.json copy $(BUILD_DIR)/defaults.json FORCE
-	packer build \
+	VAULT_ADDR=$(vault_address) \
+	VAULT_TOKEN=$$(cat ~/.vault-token) \
+		packer build \
 		-var-file=$(BUILD_DIR)/defaults.json \
 		-var 'local_host_ip=${local_host_ip}' \
 		$(PACKER_EXTRA_ARGS) \

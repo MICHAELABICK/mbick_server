@@ -11,6 +11,8 @@
         cache_valid_time: 3600
         name:
           - nfs-common
+  roles:
+    - ssh_certificates
   tasks:
     # # - debug:
     # #     msg: ansible_user is {{ ansible_user }}

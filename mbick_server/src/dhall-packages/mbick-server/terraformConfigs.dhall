@@ -223,7 +223,7 @@ let toTerraform =
           , vault = { address = HostURL/show config.vault_api.address }
           , proxmox = {
               , pm_tls_insecure = True
-              , pm_api_url = config.proxmox_api.url
+              , pm_api_url = HostURL/show config.proxmox_api.address
               , pm_password =
                   "\${data.vault_generic_secret.proxmox_user.data[\"password\"]}"
               , pm_user =

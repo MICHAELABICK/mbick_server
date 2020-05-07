@@ -1,12 +1,10 @@
 # Base Level Groups
 ## OS Distributions
 [proxmox]
-node1 ansible_host=192.168.1.101 ansible_user=root
 
 [freenas]
 
 [ubuntu_bionic]
-vault01 ansible_host=192.168.11.104 ansible_user=admin
 
 ## Machine Types
 [proxmox_vm]
@@ -20,7 +18,6 @@ vault01 ansible_host=192.168.11.104 ansible_user=admin
 
 ## VM Applications
 [hashicorp_vault]
-vault01
 
 [docker_host]
 
@@ -28,7 +25,6 @@ vault01
 
 ## Software
 [cloud_init]
-
 
 # Group Hierarchy
 ## OS Groups
