@@ -39,6 +39,7 @@ let JSONProxmoxDisk =
       , type : Text
       , size : Natural
       , storage : Text
+      , format : Text
       }
 
 let JSONProxmoxDevice =
@@ -58,7 +59,7 @@ let JSONProvisioner =
       < LocalExec :
           { local-exec :
               { command : Text
-              , environment : Map Text Text
+              , environment : Optional (Map Text Text)
               , when : Optional Text
               }
           }
@@ -136,7 +137,8 @@ let toResource =
               [ { id = 0
                 , type = "scsi"
                 , size = vm.disk_gb
-                , storage = "local-zfs"
+                , storage = "vm-images"
+                , format = "qcow2"
                 }
               ]
           , network =
@@ -195,16 +197,16 @@ let toResource =
               --       , when = None Text
               --       }
               --   }
-              -- , JSONProvisioner.LocalExec
-              --   { local-exec =
-              --       { command =
-              --           ansible_playbook_command
-              --           ++ "--limit \"${vm.name}\" "
-              --           ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
-              --       , environment = [] : Map Text Text
-              --       , when = None Text
-              --       }
-              --   }
+              , JSONProvisioner.LocalExec
+                { local-exec =
+                    { command =
+                        ansible_playbook_command
+                        ++ "--limit \"${vm.name}\" "
+                        ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
+                    , environment = None (Map Text Text)
+                    , when = None Text
+                    }
+                }
               -- , JSONProvisioner.LocalExec
               --   { local-exec =
               --       { command = "ssh-keygen -R ${vm.ip}"
@@ -256,7 +258,7 @@ let test_resource =
           , "k3s_control_node"
           ]
       , target_node = "node1"
-      , clone = "ubuntu-bionic-1570324283"
+      , clone = "ubuntu-bionic-1588963019"
       , cores = 2
       , memory = 4096
       , disk_gb = 20

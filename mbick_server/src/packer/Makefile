@@ -21,7 +21,6 @@ all: images
 # we force and rely on rsync for only touching updated files
 copy: FORCE
 	rsync -aR \
-		$(SRC_DIR)/./scripts \
 		$(SRC_DIR)/./templates/*/http \
 		$(BUILD_DIR)/
 build: $(templates_build) copy $(BUILD_DIR)/defaults.json
