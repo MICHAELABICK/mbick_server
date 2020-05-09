@@ -203,6 +203,8 @@ let toResource =
                         ansible_playbook_command
                         ++ "--limit \"${vm.name}\" "
                         ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
+                        -- ++ "../../provisioning/provision.yml"
+                        -- ++ "/Users/MichaelBick/Documents/code/mbick_server/mbick_server/src/provisioning/provision.yml"
                     , environment = None (Map Text Text)
                     , when = None Text
                     }

@@ -23,12 +23,13 @@ def main():
         # symlink .terraform directory if it exists
         if os.path.isdir(init_dir):
             src = init_dir
-            dest = "{}/.terraform".format(tmp_dir)
+            dest = os.path.join(tmp_dir, ".terraform")
             os.symlink(src, dest)
             print("Symlinked {} to {}".format(src, dest))
 
         # generate terraform files from dhall configs
-        for filename in glob("*.tf.json.dhall"):
+        os.chdir(tmp_dir)
+        for filename in glob(os.path.join(cwd, "*.tf.json.dhall")):
             cmd = [
                     "dhall-to-json",
                     "--pretty",
@@ -36,7 +37,7 @@ def main():
                     "--file",
                     filename,
                     "--output",
-                    "{}/{}".format(
+                    os.path.join(
                         tmp_dir,
                         os.path.basename(filename)[:-len(".dhall")]
                     )
@@ -51,7 +52,7 @@ def main():
             tf_args.append("-state={}/terraform.tfstate".format(cwd))
 
         # run terraform command
-        os.chdir(tmp_dir)
+        # os.chdir(tmp_dir)
         cmd = ["terraform", tf_cmd] + tf_args + sys.argv[2:]
         print(subprocess.list2cmdline(cmd))
         subprocess.call(cmd)
@@ -59,7 +60,7 @@ def main():
         # copy .terraform directory if it does not exist
         if not os.path.isdir(init_dir):
             os.mkdir(init_dir)
-            src = "{}/.terraform".format(tmp_dir)
+            src = os.path.join(tmp_dir, ".terraform")
             dest = init_dir
             copytree(src, dest)
             print("Copied contents of {} to {}".format(src, dest))
