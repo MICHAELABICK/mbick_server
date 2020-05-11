@@ -1,4 +1,5 @@
 let Prelude = ./Prelude.dhall
+let Text/concatMap = Prelude.Text.concatMap
 let Map = Prelude.Map.Type
 let List/map = Prelude.List.map
 let Location = Prelude.Location.Type
@@ -6,6 +7,8 @@ let JSON = Prelude.JSON
 
 let types = ./types.dhall
 let config = ./config.dhall
+
+let ProxmoxVM = types.ProxmoxVM
 
 let networking = ../networking/package.dhall
 let HostURL/show = networking.HostURL.show
@@ -31,7 +34,7 @@ let renderAnsiblePlaybookPath =
 
 let ansible_playbook_command =
   "ansible-playbook "
-  ++ "-i \"${renderAbsolutePath config.project_paths.ansible.inventory}\" "
+  ++ "-i \"${renderAbsolutePath config.project_paths.ansible.inventory}/group_inventory\" "
 
 
 let JSONProxmoxDisk =
@@ -55,20 +58,41 @@ let JSONConnection =
       , host : Text
       }
 
+let JSONLocalExecProvisioner = {
+     , Type = {
+         , local-exec : {
+             , command : Text
+             , environment : Optional (Map Text Text)
+             , when : Optional Text
+             , interpreter : Optional (List Text)
+             }
+         }
+     , default = {
+         , local-exec = {
+             , environment = None (Map Text Text)
+             , when = None Text
+             , interpreter = None (List Text)
+             }
+         }
+     }
+
 let JSONProvisioner =
       < LocalExec :
-          { local-exec :
-              { command : Text
-              , environment : Optional (Map Text Text)
-              , when : Optional Text
-              }
-          }
+         JSONLocalExecProvisioner.Type
       | RemoteExec :
           { remote-exec :
               { inline : List Text
               }
           }
       >
+
+let JSONLocalFile = {
+      , mapKey : Text
+      , mapValue : {
+          , content : Text
+          , filename : Text
+          }
+      }
 
 let JSONProxmoxVM =
       { mapKey : Text
@@ -93,20 +117,69 @@ let JSONProxmoxVM =
       }
 
 
+let default_ansible_groups = [
+      , "proxmox_vm"
+      , "cloud_init"
+      , "terraform_managed"
+      ]
+
+let localFileName =
+      \(vm : ProxmoxVM.Type)
+  ->  "${vm.name}_inventory_file"
+
+let hostInventoryContent =
+      \(vm : ProxmoxVM.Type)
+  ->  \(groups : List Text)
+  ->  let group_definitions =
+            Text/concatMap
+            Text
+            ( \(group : Text) ->
+              ''
+
+              [${group}]
+              ${vm.name}
+              ''
+            )
+            groups
+      in
+      ''
+      [all]
+      ${vm.name} ansible_host=${vm.ip}
+      ''
+      ++ group_definitions
+
 let toQemuAgentEnable =
       \(enable : Bool)
   ->  if enable then 1 else 0 : Natural
 
-let toResource =
-      \(vm : types.ProxmoxVM.Type)
+let toLocalFileResource =
+      \(vm : ProxmoxVM.Type)
+  ->  { mapKey = localFileName vm
+      , mapValue = {
+          , content =
+              hostInventoryContent
+              vm
+              ( default_ansible_groups
+                # vm.groups
+              )
+          , filename = "\${path.module}/files/${vm.name}_inventory"
+          }
+      } : JSONLocalFile
+
+let toProxmoxVMResource =
+      \(vm : ProxmoxVM.Type)
   ->  { mapKey = vm.name
-      , mapValue =
-          { name = vm.name
-          -- , connection =
-          --     { type = "ssh"
-          --     , user = 
-          --         "\${data.vault_generic_secret.default_user.data[\"username\"]}"
-          --     , host = vm.ip
+      , mapValue = {
+          , name = vm.name
+          , connection =
+              [ { type = "ssh"
+                , user =
+                    "\${data.vault_generic_secret.default_user.data[\"username\"]}"
+                , private_key =
+                    "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
+                , host = vm.ip
+                }
+              ]
           , desc =
               JSON.render
               ( JSON.object
@@ -151,15 +224,6 @@ let toResource =
           , ipconfig0 =
               "ip=${vm.ip}/${Natural/show vm.subnet.mask},"
               ++ "gw=${config.gateway}"
-          , connection =
-              [ { type = "ssh"
-                , user =
-                    "\${data.vault_generic_secret.default_user.data[\"username\"]}"
-                , private_key =
-                    "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
-                , host = vm.ip
-                }
-              ]
           , ciuser =
               "\${data.vault_generic_secret.default_user.data[\"username\"]}"
           , sshkeys =
@@ -170,6 +234,13 @@ let toResource =
               -- ''${chomp(data.vault_generic_secret.default_user.data["public_key"])}
               -- ''
           , provisioner = [
+              -- , JSONProvisioner.RemoteExec
+              --   { remote-exec =
+              --       { inline = [
+              --           "ip a"
+              --         ]
+              --       }
+              --   }
               , JSONProvisioner.RemoteExec
                 { remote-exec =
                     { inline = [
@@ -179,50 +250,51 @@ let toResource =
                 }
               -- , JSONProvisioner.LocalExec
               --   { local-exec =
-              --       { command = "ssh-keygen -R ${vm.ip}"
-              --       , environment = [] : Map Text Text
-              --       , when = None Text
-              --       }
-              --   }
-              -- , JSONProvisioner.LocalExec
-              --   { local-exec =
               --       { command =
-              --           ansible_playbook_command
-              --           ++ "--limit \"${vm.name}\" "
-              --           ++ "-e \"ansible_user=${default_user}\" "
-              --           ++ "--private-key=PRIVATE_KEY "
-              --           ++ "\"${renderAnsiblePlaybookPath "manage_users.yml"}\""
+              --          "debug"
+              --           -- ansible_playbook_command
+              --           -- ++ "--limit \"${vm.name}\" "
+              --           -- ++ "-e \"ansible_user=${default_user}\" "
+              --           -- ++ "--private-key=PRIVATE_KEY "
+              --           -- ++ "\"${renderAnsiblePlaybookPath "manage_users.yml"}\""
               --       , environment =
-              --           toMap { ANSIBLE_HOST_KEY_CHECKING = "false" }
+              --           Some toMap { ANSIBLE_HOST_KEY_CHECKING = "false" }
               --       , when = None Text
               --       }
               --   }
-              , JSONProvisioner.LocalExec
-                { local-exec =
-                    { command =
+              , JSONProvisioner.LocalExec {
+                , local-exec = {
+                    , command =
+                        -- "ssh-add -t 30 <(echo \"\$PRIVATE_KEY\") "
+                        -- "ssh-add -t 600 - <<< \"\$PRIVATE_KEY\" "
                         ansible_playbook_command
-                        ++ "--limit \"${vm.name}\" "
+                        -- ++ "&& ${ansible_playbook_command}"
+                        -- ++ "--limit \"${vm.name}\" "
+                        ++ "-i \"\${local_file.${localFileName vm}.filename}\" "
+                        ++ "-e \"ansible_user=\${data.vault_generic_secret.default_user.data[\"username\"]}\" "
                         ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
                         -- ++ "../../provisioning/provision.yml"
                         -- ++ "/Users/MichaelBick/Documents/code/mbick_server/mbick_server/src/provisioning/provision.yml"
                     , environment = None (Map Text Text)
+                    -- , environment =
+                    --     Some
+                    --     ( toMap {
+                    --       , PRIVATE_KEY =
+                    --           "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
+                    --       }
+                    --     )
                     , when = None Text
+                    -- , interpreter = Some [ "/bin/bash", "-c" ]
+                    , interpreter = None (List Text)
                     }
                 }
-              -- , JSONProvisioner.LocalExec
-              --   { local-exec =
-              --       { command = "ssh-keygen -R ${vm.ip}"
-              --       , environment = [] : Map Text Text
-              --       , when = Some "destroy"
-              --       }
-              --   }
               ]
           }
       }
       : JSONProxmoxVM
 
 let toTerraform =
-      \(vms : List types.ProxmoxVM.Type)
+      \(vms : List ProxmoxVM.Type)
   ->  { provider = {
           , vault = { address = HostURL/show config.vault_api.address }
           , proxmox = {
@@ -240,19 +312,25 @@ let toTerraform =
               , default_user = { path = "secret/default_user" }
               }
           }
-      , resource =
-          { proxmox_vm_qemu =
+      , resource = {
+          , proxmox_vm_qemu =
               List/map
-              types.ProxmoxVM.Type
+              ProxmoxVM.Type
               JSONProxmoxVM
-              toResource
+              toProxmoxVMResource
+              vms
+          , local_file =
+              List/map
+              ProxmoxVM.Type
+              JSONLocalFile
+              toLocalFileResource
               vms
           }
       }
 
 
 let test_resource =
-      types.ProxmoxVM::
+      ProxmoxVM::
       { name = "kube-dev01"
       -- , desc = "I don't think this works yet"
       , groups = [

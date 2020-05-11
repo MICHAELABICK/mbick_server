@@ -15,4 +15,7 @@ in {
 , ssh = {
     , address = vault_address_url
     }
+, sign-ssh = {
+    , address = vault_address_url
+    }
 }

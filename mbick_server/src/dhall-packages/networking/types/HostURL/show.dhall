@@ -11,19 +11,17 @@ let show =
             }
             url.protocol
       let port =
-            Optional/fold
-            Natural
+            merge {
+            , None = ""
+            , Some = \(x : Natural) -> ":${Natural/show x}"
+            }
             url.port
-            Text
-            (\(x : Natural) -> ":${Natural/show x}")
-            ""
       let endpoint =
-            Optional/fold
-            Text
+            merge {
+            , None = ""
+            , Some = \(x : Text) -> "/${x}"
+            }
             url.endpoint
-            Text
-            (\(x : Text ) -> "/${x}")
-            ""
       in "${protocol}://${HostAddress/show url.host}${port}${endpoint}"
 
 in show
