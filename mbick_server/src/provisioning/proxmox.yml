@@ -2,4 +2,4 @@
 - hosts: proxmox
   roles:
     - { role: pve-repos, become: yes }
-    - { role: geerlingguy.ansible-role-packer, become: yes }
+    # - { role: geerlingguy.ansible-role-packer, become: yes }

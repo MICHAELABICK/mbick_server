@@ -3,13 +3,8 @@
 hashicorp_vault_version: 1.3.1
 # hashicorp_vault_domain: vault.example.com # will be used when I setup TLS certification
 
-
-ssh_users:
-  - name: mbick
-    id:   1100
-# TODO: figure out how to add default user to the docker_users list
-docker_users: "{{ ssh_users | map(attribute='name') | list | join(',') }}"
-
+# geerlingguy.docker
+docker_install_compose: false
 
 # TODO: replace this with an actual compose file
 ct_users:
