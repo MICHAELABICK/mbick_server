@@ -8,7 +8,6 @@ let config =
       { project_paths =
           ../../paths.dhall
       , proxmox_api =
-          -- toProxmoxAPI (networking.HostAddress.Type.IP "192.168.11.101")
           { address =
               HostURL::{
               , protocol = networking.Protocol.HTTPS
