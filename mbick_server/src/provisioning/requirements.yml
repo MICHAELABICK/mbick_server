@@ -1,4 +1,2 @@
-# - src: oefenweb.sudoers
-# - src: andrewrothstein.sudoers
 - src: geerlingguy.docker
 - src: xanmanning.k3s

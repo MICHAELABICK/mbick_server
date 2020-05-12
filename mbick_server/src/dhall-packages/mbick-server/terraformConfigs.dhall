@@ -355,10 +355,10 @@ let largeVM =
 in {
 , docker_dev =
     toTerraform [
-    , largeVM "docker01" "192.168.11.130" // { groups = [ "docker_host" ] }
+    , largeVM "docker01" "192.168.11.120" // { groups = [ "docker_host" ] }
     ]
 , kube_dev =
     toTerraform [
-    , largeVM "kube01" "192.168.11.140" // { groups = [ "k3s_control_node" ] }
+    , largeVM "kube01" "192.168.11.130" // { groups = [ "k3s_control_node" ] }
     ]
 }
