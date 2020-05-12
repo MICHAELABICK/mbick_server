@@ -347,10 +347,7 @@ let largeVM =
       , memory = 4096
       , disk_gb = 20
       , ip = ip
-      , subnet =
-          { ip = "192.168.11.0"
-          , mask = 24
-          }
+      , subnet = config.subnet
       , gateway = config.gateway
       }
 
