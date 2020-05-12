@@ -1,3 +1,6 @@
-{ project = ./. as Location
-} /\
-./provisioning/paths.dhall
+{
+, project =
+    ./. as Location
+, ansible = 
+    ./provisioning/paths.dhall
+}

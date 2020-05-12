@@ -6,7 +6,7 @@ let HostURL = networking.HostURL
 
 let config =
       { project_paths =
-          ../../paths2.dhall
+          ../../paths.dhall
       , proxmox_api =
           -- toProxmoxAPI (networking.HostAddress.Type.IP "192.168.11.101")
           { address =
