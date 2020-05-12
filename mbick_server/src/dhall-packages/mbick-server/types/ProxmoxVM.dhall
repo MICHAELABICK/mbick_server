@@ -8,8 +8,8 @@ in
         List Text
     , target_node :
         Text
-    , clone :
-        Text
+    , template :
+        ./ProxmoxVMTemplate.dhall
     , cores :
         Natural
     , sockets :
@@ -28,6 +28,7 @@ in
         networking.Gateway
     }
 , default = {
+    , groups = [] : List Text
     , cores = 1
     , sockets = 1
     , agent = True

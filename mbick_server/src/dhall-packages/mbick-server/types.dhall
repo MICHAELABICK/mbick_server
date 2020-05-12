@@ -13,4 +13,6 @@
     ./types/ProxmoxUser.dhall
 , ProxmoxVM =
     ./types/ProxmoxVM.dhall
+, ProxmoxVMTemplate =
+    ./types/ProxmoxVMTemplate.dhall
 }

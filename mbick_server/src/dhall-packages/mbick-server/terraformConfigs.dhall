@@ -194,6 +194,7 @@ let toProxmoxVMResource =
                           , "cloud_init"
                           , "terraform_managed"
                           ]
+                          # vm.template.groups
                           # vm.groups
                         )
                       )
@@ -201,7 +202,7 @@ let toProxmoxVMResource =
                 ]
               )
           , target_node = vm.target_node
-          , clone = vm.clone
+          , clone = vm.template.name
           , cores = vm.cores
           , sockets = vm.sockets
           , memory = vm.memory
@@ -329,20 +330,23 @@ let toTerraform =
       }
 
 
-let test_resource =
-      ProxmoxVM::
-      { name = "kube-dev01"
+let ubuntuTemplate : types.ProxmoxVMTemplate = {
+      , name = "ubuntu-bionic-1589254717"
+      , groups = [ "ubuntu_bionic" ]
+      }
+
+let largeVM =
+      \(name : Text)
+  ->  \(ip : networking.IPAddress)
+  ->  ProxmoxVM::
+      { name = name
       -- , desc = "I don't think this works yet"
-      , groups = [
-          , "ubuntu_bionic"
-          , "k3s_control_node"
-          ]
+      , template = ubuntuTemplate
       , target_node = "node1"
-      , clone = "ubuntu-bionic-1588963019"
       , cores = 2
       , memory = 4096
       , disk_gb = 20
-      , ip = "192.168.11.130"
+      , ip = ip
       , subnet =
           { ip = "192.168.11.0"
           , mask = 24
@@ -352,9 +356,12 @@ let test_resource =
 
 
 in {
+, docker_dev =
+    toTerraform [
+    , largeVM "docker01" "192.168.11.130" // { groups = [ "docker_host" ] }
+    ]
 , kube_dev =
     toTerraform [
-    , test_resource
-    -- , test_resource // { name = "kube-dev02" }
+    , largeVM "kube01" "192.168.11.140" // { groups = [ "k3s_control_node" ] }
     ]
 }

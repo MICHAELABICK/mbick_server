@@ -3,8 +3,8 @@
     ./types.dhall
 , config =
     ./config.dhall
-, toPackerDefaults =
-    ./toPackerDefaults.dhall
+, packer =
+    ./packer.dhall
 , terraformConfigs =
     ./terraformConfigs.dhall
 , vault =

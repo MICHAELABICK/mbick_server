@@ -3,14 +3,13 @@
   shell: >
       dhall-to-json <<< \
         'let packages = {{ playbook_dir }}/../packages.dhall
-        let HostURL/show = packages.networking.HostURL.show
-        in HostURL/show packages.mbick-server.config.vault_api.address'
-  register: vault_address_json
+        in packages.mbick-server.ansible.ssh_user_ca_public_key_endpoint'
+  register: ssh_user_ca_public_key_endpoint
 
 - name: Get the trusted user public key
   become: yes
   get_url:
-    url: "{{ vault_address_json.stdout | from_json }}/v1/ssh/public_key"
+    url: "{{ ssh_user_ca_public_key_endpoint.stdout | from_json }}"
     dest: /etc/ssh/trusted-user-ca-keys.pem
 
 - name: Set the TrustedUserCAKeys
