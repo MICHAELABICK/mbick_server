@@ -1,3 +1,3 @@
-{ ansible = ./. as Location
-, ansible_inventory = ./inventory as Location
+{ playbooks = ./. as Location
+, inventory = ./inventory as Location
 }
