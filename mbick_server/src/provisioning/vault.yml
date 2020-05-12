@@ -1,0 +1,5 @@
+---
+# Currently designed to be run with --ask-pass option
+- hosts: hashicorp_vault
+  roles:
+    - hashicorp_vault

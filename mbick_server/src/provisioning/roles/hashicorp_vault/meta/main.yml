@@ -1,0 +1,15 @@
+---
+# dependencies:
+#   - role: geerlingguy.certbot
+#     become: yes
+#     vars:
+#       # TODO: Create certbot user automatically
+#       # certbot_auto_renew_user: certbot
+#       certbot_auto_renew_hour: "3"
+#       certbot_auto_renew_minute: "30"
+#       certbot_create_if_missing: true
+#       certbot_create_method: standalone
+#       certbot_certs:
+#         - domains:
+#           - "{{ hashicorp_vault_domain }}"
+#       certbot_create_standalone_stop_services: []

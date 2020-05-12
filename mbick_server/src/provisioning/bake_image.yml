@@ -11,6 +11,8 @@
         cache_valid_time: 3600
         name:
           - nfs-common
+  roles:
+    - ssh_certificates
   tasks:
     # # - debug:
     # #     msg: ansible_user is {{ ansible_user }}
@@ -115,3 +117,18 @@
         name: "{{ provision_user }}"
         password: vagrant
         state: present
+
+- hosts: vm
+  tasks:
+    - name: Find SSH host files to delete
+      find:
+        path: /etc/ssh
+        patterns: ssh_host_*
+      register: ssh_host_files
+
+    - name: Delete SSH host files so that they are recreated on startup
+      become: yes
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ ssh_host_files.files }}"

@@ -1,4 +1,4 @@
-**/config/credentials.dhall
+**/credentials.dhall
 defaults.env
 
 /src/packer/output*/*

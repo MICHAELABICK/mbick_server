@@ -1,1 +1,2 @@
-../../config/templates/packer_defaults.dhall
+let packages = ./packages.dhall
+in packages.mbick-server.packer.defaults

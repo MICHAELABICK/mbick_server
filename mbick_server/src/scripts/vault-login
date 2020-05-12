@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+
+# in the future, we could possibly source this script so that
+# VAULT_ADDR can be set
+# export VAULT_ADDR="${adress}"
+
+eval $(dhall-to-bash --declare LOGIN_CMD <<< "let packages = ${SRC_DIR}/packages.dhall in packages.mbick-server.vault.login")
+echo "${LOGIN_CMD}"
+eval $LOGIN_CMD

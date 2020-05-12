@@ -1,15 +1,19 @@
-# Environment
-Before many Terraform commands can be run, we need to source the environment variables that Terraform will use. This can be easily done with our helper script,
-
-``` bash
-    cd docker-dev
-    source ../scripts/set-terraform-environment
-```
-
-Once that is done, run Terraform as you would like,
+# Vault Authentication
+Before Terraform can be run,
+we must first authenticate to Hashicorp Vault.
+Inside the project `src` directory, run,
 
 ``` sh
-    terraform init
-    terraform plan
-    terraform apply
+	./scripts/vault-login
+	vault -login -method=userpass -address=<address> username=<username>
+```
+
+Once that is done, `cd` to the desired Terraform directory.
+Then run Terraform as you would like using the helper script,
+
+``` sh
+	cd terraform/kube-dev
+	../scripts/mbick-tf init
+	../scripts/mbick-tf plan
+	../scripts/mbick-tf apply
 ```

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+
+eval $(dhall-to-bash --declare VAULT_ADDRESS <<< "let packages = ${SRC_DIR}/packages.dhall in packages.mbick-server.vault.ssh.address")
+
+# TODO: implement host key checking
+SSH_CMD="vault ssh \
+    -address=$VAULT_ADDRESS
+    -mode=ca \
+    -role=all \
+    -strict-host-key-checking=false \
+    -user-known-hosts-file=/dev/null \
+    $@"
+echo $SSH_CMD
+eval $SSH_CMD

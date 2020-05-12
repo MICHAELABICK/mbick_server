@@ -1,0 +1,21 @@
+- name: Read JSON from dhall config
+  connection: local
+  shell: >
+      dhall-to-json <<< \
+        'let packages = {{ playbook_dir }}/../packages.dhall
+        in packages.mbick-server.ansible.ssh_user_ca_public_key_endpoint'
+  register: ssh_user_ca_public_key_endpoint
+
+- name: Get the trusted user public key
+  become: yes
+  get_url:
+    url: "{{ ssh_user_ca_public_key_endpoint.stdout | from_json }}"
+    dest: /etc/ssh/trusted-user-ca-keys.pem
+
+- name: Set the TrustedUserCAKeys
+  become: yes
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^TrustedUserCAKeys'
+    line: TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem
+  notify: restart ssh

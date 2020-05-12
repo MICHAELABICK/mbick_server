@@ -14,5 +14,3 @@
 - hosts: k3s_node
   roles:
     - xanmanning.k3s
-
-

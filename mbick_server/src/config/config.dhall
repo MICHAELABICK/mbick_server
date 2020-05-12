@@ -1,7 +1,7 @@
 let types = ./types.dhall
 
 
-let makeProxmoxAPIBaseURL =
+let toProxmoxAPIBaseURL =
       \(host : types.HostAddress)
   ->  let address =
         merge
@@ -11,15 +11,15 @@ let makeProxmoxAPIBaseURL =
         host
       in "https://${address}:8006" : types.ProxmoxAPIBaseURL
 
-let makeProxmoxAPIURL =
+let toProxmoxAPIURL =
       \(host : types.HostAddress)
-  ->  let base = makeProxmoxAPIBaseURL host
+  ->  let base = toProxmoxAPIBaseURL host
       in "${base}/api2/json" : types.ProxmoxAPIURL
 
-let makeProxmoxAPI =
+let toProxmoxAPI =
       \(host : types.HostAddress)
-  ->  let base_url = makeProxmoxAPIBaseURL host
-      let url      = makeProxmoxAPIURL host
+  ->  let base_url = toProxmoxAPIBaseURL host
+      let url      = toProxmoxAPIURL host
       in  { host = host
           , base_url = base_url
           , url = url
@@ -33,7 +33,7 @@ let config =
           ./credentials.dhall
       , proxmox_api =
           let host = types.HostAddress.IP "192.168.11.101"
-          in makeProxmoxAPI host
+          in toProxmoxAPI host
       , gateway = "192.168.11.1"
       }
 
