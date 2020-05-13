@@ -1,0 +1,7 @@
+# This is a temporary fix to the lack
+# of this feature in geerlinguy.docker
+# https://github.com/geerlingguy/ansible-role-docker/pull/190
+- include_tasks: docker-daemon-options.yml
+  when:
+    - docker_daemon_json_options is defined
+    - docker_daemon_json_options | length > 0

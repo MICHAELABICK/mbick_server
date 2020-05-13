@@ -7,9 +7,26 @@
         - lock
         - lock-frontend
 
+- hosts: all
+  tasks:
+    - name: Update Apt cache
+      become: yes
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
 - hosts: docker_host
+  vars:
+    docker_daemon_json_options:
+      hosts:
+        - tcp://0.0.0.0:2375
+        - unix:///var/run/docker.sock
   roles:
-    - { role: geerlingguy.docker, become: yes }
+    # - { role: geerlingguy.docker, become: yes }
+    # This is a wrapper hotfix
+    # until geerlinguy.docker implements the daemon options
+    - docker
+  tasks:
 
 - hosts: k3s_node
   roles:
