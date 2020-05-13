@@ -22,4 +22,4 @@ python "$SCRIPT_DIR/proxmox.py" \
     --password="$PROXMOX_PASSWORD" \
     --qemu-default-interface \
     --trust-invalid-certs \
-    --list --pretty
+    --pretty $@
