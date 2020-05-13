@@ -23,9 +23,9 @@
         - unix:///var/run/docker.sock
   roles:
     # - { role: geerlingguy.docker, become: yes }
-    # This is a wrapper hotfix
+    # This is a hotfix
     # until geerlinguy.docker implements the daemon options
-    - docker
+    - { role: docker, become: yes}
   tasks:
 
 - hosts: k3s_node
