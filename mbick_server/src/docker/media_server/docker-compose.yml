@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    environment:
+      - PUID=2001
+      - PGID=2001
+      - TZ=America/Los_Angeles
+      # - UMASK_SET=022 # causes permissions issues with NFS
+    volumes:
+      - radarr-config:/config
+      - movies:/movies
+      - downloads:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+
+volumes:
+  radarr-config:
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   o: 'addr=192.168.11.111,rw'
+    #   device: ':/mnt/store/docker/configs/radarr'
+
+  movies:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: 'addr=192.168.11.111,rw'
+      device: ':/mnt/store/media/movies'
+
+  downloads:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: 'addr=192.168.11.111,rw'
+      device: ':/mnt/store/downloads'
