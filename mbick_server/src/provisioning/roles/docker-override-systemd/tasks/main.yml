@@ -1,0 +1,9 @@
+- name: Create systemd override directory
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+
+- name: Add systemd override
+  copy:
+    src: override.conf
+    dest: /etc/systemd/system/docker.service.d/override.conf
