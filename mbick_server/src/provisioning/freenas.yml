@@ -6,7 +6,7 @@
   become: yes
   tasks:
     - name: Install sanoid dependencies
-      pkgng:
+      package:
         name: 
           - p5-Config-IniFiles
           - p5-Capture-Tiny
@@ -14,3 +14,18 @@
           - mbuffer
           - lzop
         state: present
+
+    - name: Install ca_root_nss for FreeBSD SSL certificates
+      package:
+        name:
+          - ca_root_nss
+        state:
+          present
+
+    - name: Install Sanoid Binary
+      get_url:
+        url: https://raw.githubusercontent.com/jimsalterjrs/sanoid/v2.0.3/sanoid
+        dest: /usr/local/bin/sanoid
+        owner: root
+        group: wheel
+        mode: 0755
