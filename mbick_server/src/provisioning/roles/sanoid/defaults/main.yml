@@ -1,0 +1,10 @@
+sanoid_version: 2.0.3
+
+sanoid_dir: /usr/local/bin
+sanoid_path: "{{ sanoid_dir }}/sanoid"
+
+sanoid_config_dir: /etc/sanoid
+sanoid_config_path: "{{ sanoid_config_dir }}/sanoid.conf"
+
+sanoid_user: sanoid
+sanoid_group: sanoid

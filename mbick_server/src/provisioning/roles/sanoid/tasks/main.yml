@@ -1,0 +1,53 @@
+# Heavily based on https://github.com/dimaskiddo/ansible-sanoid
+- name: Install sanoid dependencies
+  package:
+    name: 
+      - p5-Config-IniFiles
+      - p5-Capture-Tiny
+      - pv
+      - mbuffer
+      - lzop
+    state: present
+
+- name: Install ca_root_nss for FreeBSD SSL certificates
+  package:
+    name:
+      - ca_root_nss
+    state:
+      present
+
+- name: Create Sanoid config directory
+  file:
+    path: "{{ sanoid_config_dir }}"
+    state: directory
+    owner: "{{ sanoid_user }}"
+    group: "{{ sanoid_group }}"
+    recurse: true
+
+- name: Install Sanoid Binary
+  get_url:
+    url: "https://raw.githubusercontent.com/jimsalterjrs/sanoid/v{{ sanoid_version }}/sanoid"
+    dest: "{{ sanoid_path }}"
+    owner: root
+    group: wheel
+    mode: 0755
+
+# TODO: push a PR to Sanoid to fix this/fork the repo
+- name: Fix Sanoid shebang for FreeBSD
+  lineinfile:
+    path: "{{ sanoid_path }}"
+    regexp: '^#!/usr/bin/perl$'
+    line: '#!/usr/local/bin/perl'
+
+- name: Install Sanoid default configuration
+  get_url:
+    url: "https://raw.githubusercontent.com/jimsalterjrs/sanoid/v{{ sanoid_version }}/sanoid.defaults.conf"
+    dest: "{{ sanoid_config_dir }}/sanoid.defaults.conf"
+    owner: "{{ sanoid_user }}"
+    group: "{{ sanoid_group }}"
+    mode: 0644
+
+- name: Copy Sanoid configuration
+  copy:
+    src: sanoid.conf
+    dest: "{{ sanoid_config_path }}"
