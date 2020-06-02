@@ -1,0 +1,12 @@
+- hosts: freenas
+  tasks:
+    - name: Install sanoid dependencies
+      become: yes
+      package:
+        name: 
+          - p5-Config-Inifiles
+          - p5-Capture-Tiny
+          - pv
+          - mbuffer
+          - lzop
+        state: present
