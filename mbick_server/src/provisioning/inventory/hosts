@@ -1,6 +1,16 @@
 [proxmox]
 node1 ansible_host=192.168.1.101 ansible_user=root
 
+[jail]
+sanoid@192.168.11.111
+
+[jail:vars]
+ansible_connection=sshjail
+ansible_python_interpreter=/usr/local/bin/python2.7
+
+[sanoid]
+sanoid@192.168.11.111
+
 [ubuntu_bionic]
 vault01 ansible_host=192.168.11.104 ansible_user=admin
 
