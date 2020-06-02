@@ -1,5 +1,4 @@
-- hosts: sanoid
-  become: yes
+- hosts: freenas
   tasks:
     - name: Install sanoid dependencies
       become: yes
