@@ -1,10 +1,14 @@
-- hosts: freenas
+- hosts: jails
+  roles:
+    - { role: secure_ssh, become: yes }
+
+- hosts: sanoid
+  become: yes
   tasks:
     - name: Install sanoid dependencies
-      become: yes
-      package:
+      pkgng:
         name: 
-          - p5-Config-Inifiles
+          - p5-Config-IniFiles
           - p5-Capture-Tiny
           - pv
           - mbuffer
