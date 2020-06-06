@@ -3,13 +3,6 @@ node1 ansible_host=192.168.1.101 ansible_user=root
 
 [ubuntu_bionic]
 vault01 ansible_host=192.168.11.104 ansible_user=admin
-test-ansible ansible_host=192.168.11.150 ansible_user=admin
-
-[proxmox_vm]
-test-ansible
 
 [hashicorp_vault]
 vault01
-
-[cloud_init]
-test-ansible # TODO: remove this
