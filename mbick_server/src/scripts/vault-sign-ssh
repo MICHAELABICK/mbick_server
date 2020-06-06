@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+
+eval $(dhall-to-bash --declare VAULT_ADDRESS <<< "let packages = ${SRC_DIR}/packages.dhall in packages.mbick-server.vault.sign-ssh.address")
+
+SIGN_CMD="vault write \
+    -address=$VAULT_ADDRESS \
+    -field=signed_key \
+    ssh/sign/all \
+    public_key=@$HOME/.ssh/id_rsa.pub \
+    > $HOME/.ssh/id_rsa-cert.pub"
+echo $SIGN_CMD
+eval $SIGN_CMD
