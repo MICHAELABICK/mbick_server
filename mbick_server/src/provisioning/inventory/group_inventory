@@ -34,8 +34,8 @@ ubuntu_python3
 [ubuntu_python3:children]
 ubuntu_bionic
 
-[freebsd:children]
-freenas
+# [freebsd:children]
+# freenas
 
 ## Machine Groups
 [hypervisor:children]
