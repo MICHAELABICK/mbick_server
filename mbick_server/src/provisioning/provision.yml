@@ -27,6 +27,13 @@
     # This is a hotfix
     # until geerlinguy.docker implements the daemon options
     - { role: docker, become: yes}
+  tasks:
+    - name: Install open-iscsi
+      become: yes
+      package:
+        name:
+          - open-iscsi
+        state: present
 
 - hosts: k3s_node
   roles:
