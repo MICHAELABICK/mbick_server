@@ -1,0 +1,34 @@
+ - name: Perform ISCSI discovery and show available target nodes
+   open_iscsi:
+     discover: yes
+     portal: "{{ iscsi_portal }}"
+
+ - name: Connect to the named target, after updating the local persistent database (cache)
+   open_iscsi:
+     auto_node_startup: yes
+     login: yes
+     target: "{{ iscsi_target }}"
+
+ - name: Create a new primary partition on the ISCSI target
+   parted:
+     device: /dev/sdb
+     number: 1
+     state: present
+
+ - name: Create the ISCSI target filesystem
+   filesystem:
+     fstype: "{{ iscsi_filesystem }}"
+     dev: /dev/sdb1
+     force: no
+
+ - name: Create device mountpoint
+   file:
+     path: "{{ iscsi_mountpoint }}"
+     state: directory
+
+ - name: Mount device
+   mount:
+     path: "{{ iscsi_mountpoint }}"
+     src: /dev/sdb1
+     fstype: "{{ iscsi_filesystem }}"
+     state: present
