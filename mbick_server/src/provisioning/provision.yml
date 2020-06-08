@@ -23,7 +23,7 @@
         - unix:///var/run/docker.sock
 
   roles:
-    - { role: docker-override-systemd, become: yes }
+    - { role: docker_override_systemd, become: yes }
     # - { role: geerlingguy.docker, become: yes }
     # This is a hotfix
     # until geerlinguy.docker implements the daemon options
@@ -39,7 +39,7 @@
         state: present
 
   roles:
-    - role: iscsi-mount
+    - role: iscsi_mount
       become: yes
       iscsi_portal: 192.168.11.111
       iscsi_target: iqn.2005-10.org.freenas.ctl:docker01-volumes
