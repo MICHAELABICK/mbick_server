@@ -1,6 +1,49 @@
 version: "3"
 
 services:
+  # traefik:
+  #   image: "traefik:v2.2"
+  #   container_name: "traefik"
+  #   command:
+  #     #- "--log.level=DEBUG"
+  #     - "--api.insecure=true"
+  #     - "--providers.docker=true"
+  #     - "--providers.docker.exposedbydefault=false"
+  #     - "--entrypoints.web.address=:80"
+  #   ports:
+  #     - "80:80"
+  #     - "8080:8080"
+  #   volumes:
+  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    networks:
+      macvlan:
+        ipv4_address: 192.168.11.2
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      TZ: America/Los_Angeles
+      WEBPASSWORD: 'this-is-a-Password!'
+    # Volumes store your data between container upgrades
+    volumes:
+       - pihole-config:/etc/pihole/
+       - pihole-dnsmasq:/etc/dnsmasq.d/
+    dns:
+      - 127.0.0.1
+      - 1.1.1.1
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    # cap_add:
+    #   - NET_ADMIN
+    restart: unless-stopped
+
   radarr:
     image: linuxserver/radarr
     container_name: radarr
@@ -11,19 +54,43 @@ services:
       # - UMASK_SET=022 # causes permissions issues with NFS
     volumes:
       - radarr-config:/config
+      # - test:/config
       - movies:/movies
       - downloads:/downloads
+    networks:
+      - internal
+      - external
     ports:
       - 7878:7878
     restart: unless-stopped
 
+networks:
+  external:
+
+  internal:
+    internal: true
+
+  macvlan:
+    driver: macvlan
+    driver_opts:
+      parent: eth0
+    ipam:
+      config:
+        - subnet: 192.168.11.0/24
+
 volumes:
+  pihole-config:
+
+  pihole-dnsmasq:
+
+  test:
+
   radarr-config:
-    # driver: local
-    # driver_opts:
-    #   type: nfs
-    #   o: 'addr=192.168.11.111,rw'
-    #   device: ':/mnt/store/docker/configs/radarr'
+    driver: local
+    driver_opts:
+      type: nfs
+      o: 'addr=192.168.11.111,rw'
+      device: ':/mnt/store/docker_volumes/radarr_config'
 
   movies:
     driver: local
