@@ -1,4 +1,5 @@
 ---
+# Heavily based on https://github.com/GoContainer/ansible-role-docker-local-persist
 - name: Download bin docker volume plugins local-persist
   get_url:
     url: "https://github.com/MatchbookLab/local-persist/releases/download/v{{ docker_local_persist_version }}/local-persist-linux-amd64"
