@@ -1,16 +1,11 @@
 ---
 - hosts: vm
-  # vars:
-  #   provision_group: provision
-  #   provision_user: provision
   pre_tasks:
-    - name: Install Apt packages
+    - name: Update Apt cache
       become: yes
       apt:
         update_cache: yes
         cache_valid_time: 3600
-        name:
-          - nfs-common
   roles:
     - ssh_certificates
   tasks:
@@ -78,17 +73,6 @@
     #     name: sshd
     #     state: restarted
 
-# # - hosts: vm
-# #   roles:
-# #     # - oefenweb.sudoers
-# #     # - andrewrothstein.sudoers
-
-# #   tasks:
-    # - name: Apt update
-    #   become: yes
-    #   apt:
-    #     update_cache: yes
-
 - hosts: cloud_init
   become: yes
   tasks:
@@ -108,15 +92,21 @@
         name: qemu-guest-agent
         state: present
 
-- hosts: vagrant
-  tasks:
-    - name: Add vagrant user to groups
-      user:
-        # append: yes
-        group: "{{ provision_group }}"
-        name: "{{ provision_user }}"
-        password: vagrant
-        state: present
+    # - name: Install storage packages
+    #   package:
+    #     name:
+    #       # - nfs-common
+    #       - open-iscsi
+
+# - hosts: vagrant
+#   tasks:
+#     - name: Add vagrant user to groups
+#       user:
+#         # append: yes
+#         group: "{{ provision_group }}"
+#         name: "{{ provision_user }}"
+#         password: vagrant
+#         state: present
 
 - hosts: vm
   tasks:
