@@ -35,6 +35,46 @@
           - open-iscsi
         state: present
 
+    - name: Perform ISCSI discovery and show available target nodes
+      become: yes
+      open_iscsi:
+        discover: yes
+        portal: 192.168.11.111
+
+    - name: Connect to the named target, after updating the local persistent database (cache)
+      become: yes
+      open_iscsi:
+        auto_node_startup: yes
+        login: yes
+        target: iqn.2005-10.org.freenas.ctl:docker01-volumes
+
+    - name: Create a new primary partition on the ISCSI target
+      become: yes
+      parted:
+        device: /dev/sdb
+        number: 1
+        state: present
+
+    - name: Create the ISCSI target filesystem
+      become: yes
+      filesystem:
+        fstype: ext4
+        dev: /dev/sdb1
+        force: no
+
+    - name: Create device mountpoint
+      file:
+        path: /mnt/docker_volumes
+        state: directory
+
+    - name: Mount device
+      become: yes
+      mount:
+        path: /mnt/docker_volumes
+        src: /dev/sdb1
+        fstype: ext4
+        state: present
+
 - hosts: k3s_node
   roles:
     - xanmanning.k3s
