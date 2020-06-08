@@ -21,14 +21,9 @@
      dev: /dev/sdb1
      force: no
 
- - name: Create device mountpoint
-   file:
-     path: "{{ iscsi_mountpoint }}"
-     state: directory
-
  - name: Mount device
    mount:
      path: "{{ iscsi_mountpoint }}"
      src: /dev/sdb1
      fstype: "{{ iscsi_filesystem }}"
-     state: present
+     state: mounted
