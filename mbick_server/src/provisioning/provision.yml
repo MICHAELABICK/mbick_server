@@ -22,6 +22,14 @@
         - tcp://0.0.0.0:2375
         - unix:///var/run/docker.sock
 
+  roles:
+    - { role: docker-override-systemd, become: yes }
+    # - { role: geerlingguy.docker, become: yes }
+    # This is a hotfix
+    # until geerlinguy.docker implements the daemon options
+    - { role: docker, become: yes}
+
+- hosts: docker01
   pre_tasks:
     - name: Install open-iscsi
       become: yes
@@ -31,11 +39,6 @@
         state: present
 
   roles:
-    - { role: docker-override-systemd, become: yes }
-    # - { role: geerlingguy.docker, become: yes }
-    # This is a hotfix
-    # until geerlinguy.docker implements the daemon options
-    - { role: docker, become: yes}
     - role: iscsi-mount
       become: yes
       iscsi_portal: 192.168.11.111
