@@ -8,6 +8,7 @@ SIGN_CMD="vault write \
     -address=$VAULT_ADDRESS \
     -field=signed_key \
     ssh/sign/all \
+    ttl=8h \
     public_key=@$HOME/.ssh/id_rsa.pub \
     > $HOME/.ssh/id_rsa-cert.pub"
 echo $SIGN_CMD
