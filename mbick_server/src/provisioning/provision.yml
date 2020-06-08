@@ -21,12 +21,30 @@
       hosts:
         - tcp://0.0.0.0:2375
         - unix:///var/run/docker.sock
+
   roles:
     - { role: docker-override-systemd, become: yes }
     # - { role: geerlingguy.docker, become: yes }
     # This is a hotfix
     # until geerlinguy.docker implements the daemon options
     - { role: docker, become: yes}
+
+- hosts: docker01
+  pre_tasks:
+    - name: Install open-iscsi
+      become: yes
+      package:
+        name:
+          - open-iscsi
+        state: present
+
+  roles:
+    - role: iscsi-mount
+      become: yes
+      iscsi_portal: 192.168.11.111
+      iscsi_target: iqn.2005-10.org.freenas.ctl:docker01-volumes
+      iscsi_mountpoint: /mnt/docker_volumes
+      iscsi_filesystem: ext4
 
 - hosts: k3s_node
   roles:

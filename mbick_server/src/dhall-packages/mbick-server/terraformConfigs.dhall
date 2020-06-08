@@ -249,33 +249,13 @@ let toProxmoxVMResource =
                       ]
                     }
                 }
-              -- , JSONProvisioner.LocalExec
-              --   { local-exec =
-              --       { command =
-              --          "debug"
-              --           -- ansible_playbook_command
-              --           -- ++ "--limit \"${vm.name}\" "
-              --           -- ++ "-e \"ansible_user=${default_user}\" "
-              --           -- ++ "--private-key=PRIVATE_KEY "
-              --           -- ++ "\"${renderAnsiblePlaybookPath "manage_users.yml"}\""
-              --       , environment =
-              --           Some toMap { ANSIBLE_HOST_KEY_CHECKING = "false" }
-              --       , when = None Text
-              --       }
-              --   }
               , JSONProvisioner.LocalExec {
                 , local-exec = {
                     , command =
-                        -- "ssh-add -t 30 <(echo \"\$PRIVATE_KEY\") "
-                        -- "ssh-add -t 600 - <<< \"\$PRIVATE_KEY\" "
                         ansible_playbook_command
-                        -- ++ "&& ${ansible_playbook_command}"
-                        -- ++ "--limit \"${vm.name}\" "
                         ++ "-i \"\${local_file.${localFileName vm}.filename}\" "
                         ++ "-e \"ansible_user=\${data.vault_generic_secret.default_user.data[\"username\"]}\" "
                         ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
-                        -- ++ "../../provisioning/provision.yml"
-                        -- ++ "/Users/MichaelBick/Documents/code/mbick_server/mbick_server/src/provisioning/provision.yml"
                     , environment = None (Map Text Text)
                     -- , environment =
                     --     Some
@@ -285,7 +265,6 @@ let toProxmoxVMResource =
                     --       }
                     --     )
                     , when = None Text
-                    -- , interpreter = Some [ "/bin/bash", "-c" ]
                     , interpreter = None (List Text)
                     }
                 }
@@ -331,7 +310,7 @@ let toTerraform =
 
 
 let ubuntuTemplate : types.ProxmoxVMTemplate = {
-      , name = "ubuntu-bionic-1589254717"
+      , name = "ubuntu-bionic-1591581438"
       , groups = [ "ubuntu_bionic" ]
       }
 
