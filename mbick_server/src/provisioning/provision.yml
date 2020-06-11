@@ -31,10 +31,11 @@
 
 - hosts: docker01
   pre_tasks:
-    - name: Install open-iscsi
+    - name: Install storage packages needed for volume mounts
       become: yes
       package:
         name:
+          - nfs-common
           - open-iscsi
         state: present
 
