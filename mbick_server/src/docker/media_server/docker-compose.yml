@@ -45,13 +45,13 @@ services:
     restart: unless-stopped
 
   sonarr:
-    image: hotio/sonarr
+    image: linuxserver/sonarr
     container_name: sonarr
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=America/Los_Angeles
-      - UMASK_SET=022
+      - UMASK_SET=022 #optional
     volumes:
       - sonarr-config:/config
       - media-center:/data
@@ -63,13 +63,13 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: hotio/radarr
+    image: linuxserver/radarr
     container_name: radarr
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=America/Los_Angeles
-      - UMASK_SET=022
+      - UMASK_SET=022 #optional
     volumes:
       - radarr-config:/config
       - media-center:/data
@@ -110,7 +110,6 @@ services:
       - WEBUI_PORT=8080
     volumes:
       - qbittorrent-config:/config
-      # - downloads:/downloads
       - torrents:/downloads
     networks:
       - internal
@@ -119,6 +118,22 @@ services:
       - 6881:6881
       - 6881:6881/udp
       - 8080:8080
+    restart: unless-stopped
+
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker
+    networks:
+      macvlan:
+        ipv4_address: 192.168.11.112
+    environment:
+      TZ: America/Los_Angeles
+      PLEX_UID: 1000
+      PLEX_GID: 1000
+    volumes:
+       - plex-config:/etc/pihole/
+       - plex-transcode:/transcode
+       - media:/data
     restart: unless-stopped
 
 
@@ -167,6 +182,13 @@ volumes:
     driver: local-persist
     driver_opts:
       mountpoint: /mnt/docker_volumes/qbittorrent-config
+
+  plex-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/plex-config
+
+  plex-transcode:
 
   media-center:
     driver: local

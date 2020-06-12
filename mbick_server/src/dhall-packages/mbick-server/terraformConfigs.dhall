@@ -322,8 +322,8 @@ let largeVM =
       -- , desc = "I don't think this works yet"
       , template = ubuntuTemplate
       , target_node = "node1"
-      , cores = 2
-      , memory = 4096
+      , cores = 4
+      , memory = 8192
       , disk_gb = 20
       , ip = ip
       , subnet = config.subnet
@@ -334,7 +334,10 @@ let largeVM =
 in {
 , docker_dev =
     toTerraform [
-    , largeVM "docker01" "192.168.11.120" // { groups = [ "docker_host" ] }
+    , largeVM "docker01" "192.168.11.120" // {
+        , groups = [ "docker_host" ]
+        , disk_gb = 100
+        }
     ]
 , kube_dev =
     toTerraform [
