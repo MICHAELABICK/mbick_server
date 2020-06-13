@@ -1,20 +1,29 @@
-version: "3"
+version: "3.8"
 
 services:
-  # traefik:
-  #   image: "traefik:v2.2"
-  #   container_name: "traefik"
-  #   command:
-  #     #- "--log.level=DEBUG"
-  #     - "--api.insecure=true"
-  #     - "--providers.docker=true"
-  #     - "--providers.docker.exposedbydefault=false"
-  #     - "--entrypoints.web.address=:80"
-  #   ports:
-  #     - "80:80"
-  #     - "8080:8080"
-  #   volumes:
-  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  traefik:
+    image: traefik:v2.2
+    container_name: traefik
+    networks:
+      - trafeik
+    ports:
+      - 80:80
+      # The Web UI (enabled by --api.insecure=true)
+      - 8090:8080
+    volumes:
+      # For Traefik's automated config to work, the docker socket needs to be
+      # mounted. There are some security implications to this.
+      # See https://docs.docker.com/engine/security/security/#docker-daemon-attack-surface
+      # and https://docs.traefik.io/providers/docker/#docker-api-access
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      # - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik"
+      - "--entrypoints.web.address=:80"
+    restart: unless-stopped
 
   pihole:
     container_name: pihole
@@ -138,6 +147,10 @@ services:
 
 
 networks:
+  trafeik:
+    # external: true
+    name: trafeik
+
   external:
 
   internal:
