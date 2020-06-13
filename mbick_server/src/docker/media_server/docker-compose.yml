@@ -136,13 +136,13 @@ services:
     image: plexinc/pms-docker
     networks:
       macvlan:
-        ipv4_address: 192.168.11.112
+        ipv4_address: 192.168.11.200
     environment:
       TZ: America/Los_Angeles
       PLEX_UID: 1000
       PLEX_GID: 1000
     volumes:
-       - plex-config:/etc/pihole/
+       - plex-config:/config
        - plex-transcode:/transcode
        - media:/data
     restart: unless-stopped
