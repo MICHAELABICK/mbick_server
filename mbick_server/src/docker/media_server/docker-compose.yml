@@ -25,35 +25,35 @@ services:
       - "--entrypoints.web.address=:80"
     restart: unless-stopped
 
-  pihole:
-    container_name: pihole
-    image: pihole/pihole:v5.0
-    networks:
-      macvlan:
-        ipv4_address: 192.168.11.2
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp"
-      - "80:80/tcp"
-      - "443:443/tcp"
-    environment:
-      TZ: America/Los_Angeles
-      WEBPASSWORD: 'this-is-a-Password!'
-      DNS1: 1.1.1.1
-      DNS2: 1.0.0.1
-    # Volumes store your data between container upgrades
-    volumes:
-       - pihole-config:/etc/pihole/
-       - pihole-dnsmasq:/etc/dnsmasq.d/
-    dns:
-      - 127.0.0.1 # Required to resolve dhcp hostnames from Pi-hole's DNSMasq
-      # - 1.1.1.1 # Optional backup if DNSMasq has problems starting
-    # Recommended but not required (DHCP needs NET_ADMIN)
-    # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    # cap_add:
-    #   - NET_ADMIN
-    restart: unless-stopped
+  # pihole:
+  #   container_name: pihole
+  #   image: pihole/pihole:v5.0
+  #   networks:
+  #     macvlan:
+  #       ipv4_address: 192.168.11.5
+  #   ports:
+  #     - "53:53/tcp"
+  #     - "53:53/udp"
+  #     - "67:67/udp"
+  #     - "80:80/tcp"
+  #     - "443:443/tcp"
+  #   environment:
+  #     TZ: America/Los_Angeles
+  #     WEBPASSWORD: 'this-is-a-Password!'
+  #     DNS1: 1.1.1.1
+  #     DNS2: 1.0.0.1
+  #   # Volumes store your data between container upgrades
+  #   volumes:
+  #      - pihole-config:/etc/pihole/
+  #      - pihole-dnsmasq:/etc/dnsmasq.d/
+  #   dns:
+  #     - 127.0.0.1 # Required to resolve dhcp hostnames from Pi-hole's DNSMasq
+  #     # - 1.1.1.1 # Optional backup if DNSMasq has problems starting
+  #   # Recommended but not required (DHCP needs NET_ADMIN)
+  #   # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+  #   # cap_add:
+  #   #   - NET_ADMIN
+  #   restart: unless-stopped
 
   sonarr:
     image: linuxserver/sonarr
@@ -136,7 +136,7 @@ services:
     image: plexinc/pms-docker
     networks:
       macvlan:
-        ipv4_address: 192.168.11.200
+        # ipv4_address: 192.168.11.220
     environment:
       TZ: America/Los_Angeles
       PLEX_UID: 1000

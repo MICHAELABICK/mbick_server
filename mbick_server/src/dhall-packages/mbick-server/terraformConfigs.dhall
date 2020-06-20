@@ -101,8 +101,10 @@ let JSONProxmoxVM =
           , desc : Text
           , target_node : Text
           , clone : Text
+          , full_clone : Bool
           , cores : Natural
           , sockets : Natural
+          , numa : Bool
           , memory : Natural
           , agent : Natural
           , disk : List JSONProxmoxDisk
@@ -203,8 +205,10 @@ let toProxmoxVMResource =
               )
           , target_node = vm.target_node
           , clone = vm.template.name
+          , full_clone = True
           , cores = vm.cores
           , sockets = vm.sockets
+          , numa = True
           , memory = vm.memory
           , agent = toQemuAgentEnable vm.agent
           , disk =
@@ -329,12 +333,13 @@ let largeVM =
       , subnet = config.subnet
       , gateway = config.gateway
       }
+--       }
 
 
 in {
 , docker_dev =
     toTerraform [
-    , largeVM "docker01" "192.168.11.120" // {
+    , largeVM "docker01" "192.168.11.200" // {
         , groups = [ "docker_host" ]
         , disk_gb = 100
         }
