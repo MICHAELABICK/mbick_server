@@ -26,4 +26,6 @@
      path: "{{ iscsi_mountpoint }}"
      src: /dev/sdb1
      fstype: "{{ iscsi_filesystem }}"
+     passno: 0 # fsck do not check on boot
+     opts: nofail # fstab do not fail if not present on boot
      state: mounted
