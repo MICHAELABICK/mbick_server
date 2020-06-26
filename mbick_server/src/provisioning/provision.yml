@@ -1,3 +1,11 @@
+- hosts: all
+  tasks:
+    - name: Update Apt cache
+      become: yes
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
 - hosts: vm
   tasks:
     - name: Wait for automatic system updates
@@ -6,14 +14,6 @@
       loop:
         - lock
         - lock-frontend
-
-- hosts: all
-  tasks:
-    - name: Update Apt cache
-      become: yes
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
 
 - hosts: docker_host
   vars:
@@ -31,10 +31,11 @@
 
 - hosts: docker01
   pre_tasks:
-    - name: Install open-iscsi
+    - name: Install storage packages needed for volume mounts
       become: yes
       package:
         name:
+          - nfs-common
           - open-iscsi
         state: present
 
