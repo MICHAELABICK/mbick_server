@@ -101,7 +101,8 @@ let JSONProxmoxVM =
           , desc : Text
           , target_node : Text
           , clone : Text
-          , full_clone : Bool
+          -- TODO: this needs to be updated when the terraform provider gets updated
+          -- , full_clone : Bool
           , cores : Natural
           , sockets : Natural
           , numa : Bool
@@ -205,7 +206,7 @@ let toProxmoxVMResource =
               )
           , target_node = vm.target_node
           , clone = vm.template.name
-          , full_clone = True
+          -- , full_clone = True
           , cores = vm.cores
           , sockets = vm.sockets
           , numa = True
@@ -333,7 +334,6 @@ let largeVM =
       , subnet = config.subnet
       , gateway = config.gateway
       }
---       }
 
 
 in {

@@ -5,7 +5,7 @@ services:
     image: traefik:v2.2
     container_name: traefik
     networks:
-      - trafeik
+      - traefik
     ports:
       - 80:80
       # The Web UI (enabled by --api.insecure=true)
@@ -20,40 +20,47 @@ services:
       # - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
-      # - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=traefik"
+      - "--providers.docker.defaultRule=Host(`{{ normalize .Name }}.michaelbick.duckdns.org`)"
       - "--entrypoints.web.address=:80"
+    labels:
+      - "traefik.enable=true"
+      - 'traefik.http.routers.traefik.rule=Host(`traefik.michaelbick.duckdns.org`)'
+      - 'traefik.http.routers.traefik.service=api@internal'
     restart: unless-stopped
 
-  # pihole:
-  #   container_name: pihole
-  #   image: pihole/pihole:v5.0
-  #   networks:
-  #     macvlan:
-  #       ipv4_address: 192.168.11.5
-  #   ports:
-  #     - "53:53/tcp"
-  #     - "53:53/udp"
-  #     - "67:67/udp"
-  #     - "80:80/tcp"
-  #     - "443:443/tcp"
-  #   environment:
-  #     TZ: America/Los_Angeles
-  #     WEBPASSWORD: 'this-is-a-Password!'
-  #     DNS1: 1.1.1.1
-  #     DNS2: 1.0.0.1
-  #   # Volumes store your data between container upgrades
-  #   volumes:
-  #      - pihole-config:/etc/pihole/
-  #      - pihole-dnsmasq:/etc/dnsmasq.d/
-  #   dns:
-  #     - 127.0.0.1 # Required to resolve dhcp hostnames from Pi-hole's DNSMasq
-  #     # - 1.1.1.1 # Optional backup if DNSMasq has problems starting
-  #   # Recommended but not required (DHCP needs NET_ADMIN)
-  #   # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-  #   # cap_add:
-  #   #   - NET_ADMIN
-  #   restart: unless-stopped
+  pihole:
+    container_name: pihole
+    build:
+      context: ./pihole
+      args:
+        PIHOLE_VERSION: v5.0
+    networks:
+      macvlan:
+        ipv4_address: 192.168.11.3
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      TZ: America/Los_Angeles
+      WEBPASSWORD: 'this-is-a-Password!'
+      DNS1: 1.1.1.1
+      DNS2: 1.0.0.1
+    # Volumes store your data between container upgrades
+    volumes:
+       - pihole-config:/etc/pihole/
+    dns:
+      - 127.0.0.1 # Required to resolve dhcp hostnames from Pi-hole's DNSMasq
+      # - 1.1.1.1 # Optional backup if DNSMasq has problems starting
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    # cap_add:
+    #   - NET_ADMIN
+    restart: unless-stopped
 
   sonarr:
     image: linuxserver/sonarr
@@ -68,9 +75,12 @@ services:
       - media-center:/data
     networks:
       - internal
-      - external
+      - traefik
     ports:
       - 8989:8989
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.michaelbick.duckdns.org`)"
     restart: unless-stopped
 
   radarr:
@@ -86,9 +96,12 @@ services:
       - media-center:/data
     networks:
       - internal
-      - external
+      - traefik
     ports:
       - 7878:7878
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.michaelbick.duckdns.org`)"
     restart: unless-stopped
 
   jackett:
@@ -105,9 +118,12 @@ services:
       # - downloads:/downloads
     networks:
       - internal
-      - external
+      - traefik
     ports:
       - 9117:9117
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jackett.rule=Host(`jackett.michaelbick.duckdns.org`)"
     restart: unless-stopped
 
   qbittorrent:
@@ -124,11 +140,15 @@ services:
       - torrents:/downloads
     networks:
       - internal
-      - external
+      - traefik
     ports:
       - 6881:6881
       - 6881:6881/udp
       - 8080:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.michaelbick.duckdns.org`)"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
     restart: unless-stopped
 
   plex:
@@ -149,11 +169,9 @@ services:
 
 
 networks:
-  trafeik:
+  traefik:
     # external: true
-    name: trafeik
-
-  external:
+    name: traefik
 
   internal:
     internal: true
