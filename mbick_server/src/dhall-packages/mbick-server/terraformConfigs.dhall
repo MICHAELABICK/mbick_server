@@ -299,9 +299,8 @@ let toTerraform =
                   "\${data.vault_generic_secret.proxmox_user.data[\"username\"]}"
               }
           , aws = {
-              -- , access_key = "\${data.vault_aws_access_credentials.terraform.access_key}"
-              -- , secrety_key = "\${data.vault_aws_access_credentials.terraform.secret_key}"
-              , profile = "default"
+              , access_key = "\${data.vault_aws_access_credentials.terraform.access_key}"
+              , secrety_key = "\${data.vault_aws_access_credentials.terraform.secret_key}"
               , region = "us-west-1"
               }
           }
@@ -310,12 +309,12 @@ let toTerraform =
               , proxmox_user = { path = "proxmox_user/terraform" }
               , default_user = { path = "secret/default_user" }
               }
-          -- , vault_aws_access_credentials = {
-          --     , terraform = {
-          --         , backend = "aws"
-          --         , role = "terraform"
-          --         }
-          --     }
+          , vault_aws_access_credentials = {
+              , terraform = {
+                  , backend = "aws"
+                  , role = "terraform"
+                  }
+              }
           }
       , resource = {
           , proxmox_vm_qemu =

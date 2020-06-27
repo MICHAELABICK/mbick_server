@@ -1,3 +1,12 @@
+- hosts: vm
+  tasks:
+    - name: Wait for automatic system updates
+      become: yes
+      shell: while sudo fuser /var/lib/dpkg/{{ item }} >/dev/null 2>&1; do sleep 1; done;
+      loop:
+        - lock
+        - lock-frontend
+
 - hosts: all
   tasks:
     - name: Update Apt cache
