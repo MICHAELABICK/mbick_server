@@ -120,6 +120,30 @@ let JSONProxmoxVM =
       }
 
 
+let TerraformBackend = {
+      , bucket : Text
+      , region : Text
+      , dynamodb_table : Text
+      }
+
+let TerraformRemoteState = {
+      , backend : TerraformBackend
+      , key : Text
+      }
+
+let TerraformConfig = {
+      , Type = {
+          , name : Text
+          , backend : TerraformBackend
+          , vms : List ProxmoxVM.Type
+          , remote_state : List TerraformRemoteState
+          }
+      , default = {
+          , vms = [] : List ProxmoxVM.Type
+          , remote_state = [] : List TerraformRemoteState
+          }
+      }
+
 let default_ansible_groups = [
       , "proxmox_vm"
       , "cloud_init"
@@ -278,20 +302,31 @@ let toProxmoxVMResource =
       }
       : JSONProxmoxVM
 
+let toTerraformRemoteState =
+      \(terraform_config : TerraformConfig.Type)
+  ->  {
+      , backend = terraform_config.backend
+      , key = "${terraform_config.name}/terraform.tfstate"
+      } : TerraformRemoteState
+
+let toTerraformBackend =
+      \(terraform_config : TerraformConfig.Type)
+  ->  let remote_state = toTerraformRemoteState terraform_config
+      in {
+      , s3 = {
+          , bucket = remote_state.backend.bucket
+          , key = remote_state.key
+          , region = remote_state.backend.region
+          , dynamodb_table = remote_state.backend.dynamodb_table
+          , encrypt = True
+          }
+      }
+
 let toTerraform =
-      \(config_name : Text)
-  ->  \(vms : List ProxmoxVM.Type)
+      \(terraform_config : TerraformConfig.Type)
   ->  {
       , terraform = {
-          , backend = {
-              , s3 = {
-                  , bucket = "mbick-server.terraform-state"
-                  , key = "${config_name}/terraform.tfstate"
-                  , region = "us-west-1"
-                  , dynamodb_table = "terraform-lock"
-                  , encrypt = True
-                  }
-              }
+          , backend = toTerraformBackend terraform_config
           }
       , provider = {
           , vault = { address = HostURL/show config.vault_api.address }
@@ -327,16 +362,22 @@ let toTerraform =
               ProxmoxVM.Type
               JSONProxmoxVM
               toProxmoxVMResource
-              vms
+              terraform_config.vms
           , local_file =
               List/map
               ProxmoxVM.Type
               JSONLocalFile
               toLocalFileResource
-              vms
+              terraform_config.vms
           }
       }
 
+
+let terraform_backend : TerraformBackend = {
+      , bucket = "mbick-server.terraform-state"
+      , region = "us-west-1"
+      , dynamodb_table = "terraform-lock"
+      }
 
 let ubuntuTemplate : types.ProxmoxVMTemplate = {
       , name = "ubuntu-bionic-1591581438"
@@ -352,6 +393,7 @@ let largeVM =
       , template = ubuntuTemplate
       , target_node = "node1"
       , cores = 4
+      , sockets = 2
       , memory = 8192
       , disk_gb = 20
       , ip = ip
@@ -360,14 +402,28 @@ let largeVM =
       }
 
 
+let docker_config =
+      TerraformConfig::{
+      , name = "docker_dev"
+      , backend = terraform_backend
+      , vms = [
+          , largeVM "docker01" "192.168.11.200" // {
+              , groups = [ "docker_host" ]
+              , disk_gb = 100
+              }
+          ]
+      }
+
 in {
 , docker_dev =
+    toTerraform docker_config
+, media_server_dev =
     toTerraform
-    "docker_dev"
-    [
-    , largeVM "docker01" "192.168.11.200" // {
-        , groups = [ "docker_host" ]
-        , disk_gb = 100
-        }
-    ]
+    TerraformConfig::{
+    , name = "media_server_dev"
+    , backend = terraform_backend
+    , remote_state = [
+        , toTerraformRemoteState docker_config
+        ]
+    }
 }
