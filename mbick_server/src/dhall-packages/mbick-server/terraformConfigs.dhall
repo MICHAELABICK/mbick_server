@@ -274,8 +274,21 @@ let toProxmoxVMResource =
       : JSONProxmoxVM
 
 let toTerraform =
-      \(vms : List ProxmoxVM.Type)
-  ->  { provider = {
+      \(config_name : Text)
+  ->  \(vms : List ProxmoxVM.Type)
+  ->  {
+      , terraform = {
+          , backend = {
+              , s3 = {
+                  , bucket = "mbick-server.terraform-state"
+                  , key = "${config_name}/terraform.tfstate"
+                  , region = "us-west-1"
+                  , dynamodb_table = "terraform-lock"
+                  , encrypt = True
+                  }
+              }
+          }
+      , provider = {
           , vault = { address = HostURL/show config.vault_api.address }
           , proxmox = {
               , pm_tls_insecure = True
@@ -285,11 +298,22 @@ let toTerraform =
               , pm_user =
                   "\${data.vault_generic_secret.proxmox_user.data[\"username\"]}"
               }
+          , aws = {
+              , access_key = "\${data.vault_aws_access_credentials.terraform.access_key}"
+              , secrety_key = "\${data.vault_aws_access_credentials.terraform.secret_key}"
+              , region = "us-west-1"
+              }
           }
       , data = {
           , vault_generic_secret = {
               , proxmox_user = { path = "proxmox_user/terraform" }
               , default_user = { path = "secret/default_user" }
+              }
+          , vault_aws_access_credentials = {
+              , terraform = {
+                  , backend = "aws"
+                  , role = "terraform"
+                  }
               }
           }
       , resource = {
@@ -333,11 +357,9 @@ let largeVM =
 
 in {
 , docker_dev =
-    toTerraform [
+    toTerraform
+    "docker_dev"
+    [
     , largeVM "docker01" "192.168.11.120" // { groups = [ "docker_host" ] }
-    ]
-, kube_dev =
-    toTerraform [
-    , largeVM "kube01" "192.168.11.130" // { groups = [ "k3s_control_node" ] }
     ]
 }

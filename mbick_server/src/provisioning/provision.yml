@@ -1,11 +1,6 @@
 - hosts: vm
-  tasks:
-    - name: Wait for automatic system updates
-      become: yes
-      shell: while sudo fuser /var/lib/dpkg/{{ item }} >/dev/null 2>&1; do sleep 1; done;
-      loop:
-        - lock
-        - lock-frontend
+  roles:
+    - { role: wait_for_lock, become: yes }
 
 - hosts: all
   tasks:
@@ -14,6 +9,10 @@
       apt:
         update_cache: yes
         cache_valid_time: 3600
+
+- hosts: vm
+  roles:
+    - { role: wait_for_lock, become: yes }
 
 - hosts: docker_host
   vars:
@@ -31,10 +30,11 @@
 
 - hosts: docker01
   pre_tasks:
-    - name: Install open-iscsi
+    - name: Install storage packages needed for volume mounts
       become: yes
       package:
         name:
+          - nfs-common
           - open-iscsi
         state: present
 
