@@ -126,17 +126,13 @@ let JSONProxmoxVM =
           }
       }
 
-let JSONRemoteStateData = {
-      , mapKey : Text
-      , mapValue : {
-          , backend : Text
-          , config : {
-              , bucket : Text
-              , key : Text
-              , region : Text
-              }
+let JSONRemoteStateData =
+      < s3 : {
+          , bucket : Text
+          , key : Text
+          , region : Text
           }
-      }
+      >
 
 let JSONVaultGenericSecretData = {
       , mapKey : Text
@@ -412,17 +408,22 @@ let toTerraformBackend =
 
 let toTerraformRemoteStateData =
       \(remote_state : TerraformRemoteState)
-  ->  {
-      , mapKey = remote_state.name
-      , mapValue = {
-          , backend = "s3"
-          , config = {
+  ->  [
+      , {
+        , mapKey = remote_state.name
+        , mapValue =
+            JSON.tagNested
+            "backend"
+            "config"
+            JSONRemoteStateData
+            ( JSONRemoteStateData.s3 {
               , bucket = remote_state.backend.bucket
               , key = remote_state.key
               , region = remote_state.backend.region
               }
-          }
-      }
+            )
+        }
+      ] : Map Text (JSON.Tagged JSONRemoteStateData)
 
 let toTerraform =
       \(terraform_config : TerraformConfig.Type)
@@ -465,9 +466,9 @@ let toTerraform =
                   }
               }
           , terraform_remote_state =
-              List/map
+              List/concatMap
               TerraformRemoteState
-              JSONRemoteStateData
+              (Entry Text (JSON.Tagged JSONRemoteStateData))
               toTerraformRemoteStateData
               terraform_config.remote_state
           }
