@@ -159,11 +159,14 @@ let TerraformBackend = {
       , dynamodb_table : Text
       }
 
-let TerraformRemoteState = {
+let TerraformS3RemoteState = {
       , name : Text
       , backend : TerraformBackend
       , key : Text
       }
+
+let TerraformRemoteState =
+      < S3 : TerraformS3RemoteState >
 
 let TerraformConfig = {
       , Type = {
@@ -378,47 +381,65 @@ let toDockerComposeResource =
 
 let toTerraformRemoteState =
       \(terraform_config : TerraformConfig.Type)
-  ->  {
+  ->  TerraformRemoteState.S3 {
       , name = terraform_config.name
       , backend = terraform_config.backend
       , key = "${terraform_config.name}/terraform.tfstate"
       } : TerraformRemoteState
 
-let toTerraformBackend =
+let toBackend =
       \(terraform_config : TerraformConfig.Type)
   ->  let remote_state = toTerraformRemoteState terraform_config
-      in {
-      , s3 = {
-          , bucket = remote_state.backend.bucket
-          , key = remote_state.key
-          , region = remote_state.backend.region
-          , dynamodb_table = remote_state.backend.dynamodb_table
-          , encrypt = True
-          }
-      }
+      let backend =
+            merge {
+            , S3 =
+                \(x : TerraformS3RemoteState)
+            ->  {
+                , s3 = {
+                    , bucket = x.backend.bucket
+                    , key = x.key
+                    , region = x.backend.region
+                    , dynamodb_table = x.backend.dynamodb_table
+                    , encrypt = True
+                    }
+                }
+            }
+            remote_state
+      in backend
 
-let toTerraformRemoteStateData =
+let toRemoteStateData =
       \(remote_state : TerraformRemoteState)
-  ->  {
-      , mapKey = remote_state.name
+  ->  let name =
+            merge {
+            , S3 = \(x : TerraformS3RemoteState) -> x.name
+            }
+            remote_state
+      let data_config =
+            merge
+            { S3 =
+                \(x : TerraformS3RemoteState)
+            ->  JSONRemoteStateData.s3 {
+                , bucket = x.backend.bucket
+                , key = x.key
+                , region = x.backend.region
+                }
+            }
+            remote_state
+      in {
+      , mapKey = name
       , mapValue =
           JSON.tagNested
           "backend"
           "config"
           JSONRemoteStateData
-          ( JSONRemoteStateData.s3 {
-            , bucket = remote_state.backend.bucket
-            , key = remote_state.key
-            , region = remote_state.backend.region
-            }
-          )
+          data_config
       } : Entry Text (JSON.Tagged JSONRemoteStateData)
 
 let toTerraform =
       \(terraform_config : TerraformConfig.Type)
   ->  {
       , terraform = {
-          , backend = toTerraformBackend terraform_config
+          , backend = toBackend terraform_config
           }
       , provider = {
           , vault = { address = HostURL/show config.vault_api.address }
@@ -458,7 +479,7 @@ let toTerraform =
               List/map
               TerraformRemoteState
               (Entry Text (JSON.Tagged JSONRemoteStateData))
-              toTerraformRemoteStateData
+              toRemoteStateData
               terraform_config.remote_state
           }
       , resource = {
