@@ -211,10 +211,6 @@ let default_ansible_groups = [
       , "terraform_managed"
       ]
 
-let localFileName =
-      \(vm : ProxmoxVM.Type)
-  ->  "${vm.name}_inventory_file"
-
 let hostInventoryContent =
       \(vm : ProxmoxVM.Type)
   ->  \(groups : List Text)
@@ -240,128 +236,132 @@ let toQemuAgentEnable =
       \(enable : Bool)
   ->  if enable then 1 else 0 : Natural
 
-let toLocalFileResource =
+let toProxmoxVMResourceGroup =
       \(vm : ProxmoxVM.Type)
-  ->  { mapKey = localFileName vm
-      , mapValue = {
-          , content =
-              hostInventoryContent
-              vm
-              ( default_ansible_groups
-                # vm.groups
-              )
-          , filename = "\${path.module}/files/${vm.name}_inventory"
-          }
-      } : Entry Text JSONLocalFile
-
-let toProxmoxVMResource =
-      \(vm : ProxmoxVM.Type)
-  ->  { mapKey = vm.name
-      , mapValue = {
-          , name = vm.name
-          , connection =
-              [ { type = "ssh"
-                , user =
-                    "\${data.vault_generic_secret.default_user.data[\"username\"]}"
-                , private_key =
-                    "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
-                , host = vm.ip
-                }
-              ]
-          , desc =
-              JSON.render
-              ( JSON.object
-                [ { mapKey = "groups"
-                  , mapValue =
-                      JSON.array
-                      ( List/map
-                        Text
-                        JSON.Type
-                        JSON.string
-                        ( [ "proxmox_vm"
-                          , "cloud_init"
-                          , "terraform_managed"
-                          ]
-                          # vm.template.groups
-                          # vm.groups
-                        )
-                      )
-                  }
-                ]
-              )
-          , target_node = vm.target_node
-          , clone = vm.template.name
-          -- , full_clone = True
-          , cores = vm.cores
-          , sockets = vm.sockets
-          , numa = True
-          , memory = vm.memory
-          , agent = toQemuAgentEnable vm.agent
-          , disk =
-              [ { id = 0
-                , type = "scsi"
-                , size = vm.disk_gb
-                , storage = "vm-images"
-                , format = "qcow2"
-                }
-              ]
-          , network =
-              [ { id = 0
-                , model = "virtio"
-                , bridge = "vmbr0"
-                }
-              ]
-          , os_type = "cloud-init"
-          , ipconfig0 =
-              "ip=${vm.ip}/${Natural/show vm.subnet.mask},"
-              ++ "gw=${config.gateway}"
-          , ciuser =
-              "\${data.vault_generic_secret.default_user.data[\"username\"]}"
-          , sshkeys =
-              "\${data.vault_generic_secret.default_user.data[\"public_key\"]}"
-              -- -- Was having problems with my Emacs syntax highlighting,
-              -- -- but the following is a more useful version of the above
-              -- ''
-              -- ''${chomp(data.vault_generic_secret.default_user.data["public_key"])}
-              -- ''
-          , provisioner = [
-              -- , JSONProvisioner.RemoteExec
-              --   { remote-exec =
-              --       { inline = [
-              --           "ip a"
-              --         ]
-              --       }
-              --   }
-              , JSONProvisioner.RemoteExec
-                { remote-exec =
-                    { inline = [
-                        "echo \"Connection to ${vm.ip} established\""
+  ->  let local_file_key = "${vm.name}_inventory_file"
+      in
+      JSONResourceGroup::{
+      , proxmox_vm_qemu = [
+          , { mapKey = vm.name
+            , mapValue = {
+                , name = vm.name
+                , connection =
+                    [ { type = "ssh"
+                      , user =
+                          "\${data.vault_generic_secret.default_user.data[\"username\"]}"
+                      , private_key =
+                          "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
+                      , host = vm.ip
+                      }
+                    ]
+                , desc =
+                    JSON.render
+                    ( JSON.object
+                      [ { mapKey = "groups"
+                        , mapValue =
+                            JSON.array
+                            ( List/map
+                              Text
+                              JSON.Type
+                              JSON.string
+                              ( [ "proxmox_vm"
+                                , "cloud_init"
+                                , "terraform_managed"
+                                ]
+                                # vm.template.groups
+                                # vm.groups
+                              )
+                            )
+                        }
                       ]
-                    }
-                }
-              , JSONProvisioner.LocalExec {
-                , local-exec = {
-                    , command =
-                        ansible_playbook_command
-                        ++ "-i \"\${local_file.${localFileName vm}.filename}\" "
-                        ++ "-e \"ansible_user=\${data.vault_generic_secret.default_user.data[\"username\"]}\" "
-                        ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
-                    , environment = None (Map Text Text)
-                    -- , environment =
-                    --     Some
-                    --     ( toMap {
-                    --       , PRIVATE_KEY =
-                    --           "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
+                    )
+                , target_node = vm.target_node
+                , clone = vm.template.name
+                -- , full_clone = True
+                , cores = vm.cores
+                , sockets = vm.sockets
+                , numa = True
+                , memory = vm.memory
+                , agent = toQemuAgentEnable vm.agent
+                , disk =
+                    [ { id = 0
+                      , type = "scsi"
+                      , size = vm.disk_gb
+                      , storage = "vm-images"
+                      , format = "qcow2"
+                      }
+                    ]
+                , network =
+                    [ { id = 0
+                      , model = "virtio"
+                      , bridge = "vmbr0"
+                      }
+                    ]
+                , os_type = "cloud-init"
+                , ipconfig0 =
+                    "ip=${vm.ip}/${Natural/show vm.subnet.mask},"
+                    ++ "gw=${config.gateway}"
+                , ciuser =
+                    "\${data.vault_generic_secret.default_user.data[\"username\"]}"
+                , sshkeys =
+                    "\${data.vault_generic_secret.default_user.data[\"public_key\"]}"
+                    -- -- Was having problems with my Emacs syntax highlighting,
+                    -- -- but the following is a more useful version of the above
+                    -- ''
+                    -- ''${chomp(data.vault_generic_secret.default_user.data["public_key"])}
+                    -- ''
+                , provisioner = [
+                    -- , JSONProvisioner.RemoteExec
+                    --   { remote-exec =
+                    --       { inline = [
+                    --           "ip a"
+                    --         ]
                     --       }
-                    --     )
-                    , when = None Text
-                    , interpreter = None (List Text)
-                    }
+                    --   }
+                    , JSONProvisioner.RemoteExec
+                      { remote-exec =
+                          { inline = [
+                              "echo \"Connection to ${vm.ip} established\""
+                            ]
+                          }
+                      }
+                    , JSONProvisioner.LocalExec {
+                      , local-exec = {
+                          , command =
+                              ansible_playbook_command
+                              ++ "-i \"\${local_file.${local_file_key}.filename}\" "
+                              ++ "-e \"ansible_user=\${data.vault_generic_secret.default_user.data[\"username\"]}\" "
+                              ++ "\"${renderAnsiblePlaybookPath "provision.yml"}\""
+                          , environment = None (Map Text Text)
+                          -- , environment =
+                          --     Some
+                          --     ( toMap {
+                          --       , PRIVATE_KEY =
+                          --           "\${data.vault_generic_secret.default_user.data[\"private_key\"]}"
+                          --       }
+                          --     )
+                          , when = None Text
+                          , interpreter = None (List Text)
+                          }
+                      }
+                    ]
                 }
-              ]
-          }
+            }
+          ]
+      , local_file = [
+          , { mapKey = local_file_key
+            , mapValue = {
+                , content =
+                    hostInventoryContent
+                    vm
+                    ( default_ansible_groups
+                      # vm.groups
+                    )
+                , filename = "\${path.module}/files/${vm.name}_inventory"
+                }
+            }
+          ]
       }
-      : (Entry Text JSONProxmoxVM)
 
 let toOutputs =
       \(vm : ProxmoxVM.Type)
@@ -374,32 +374,35 @@ let toOutputs =
         }
       ] : Map Text JSONOutput.Type
 
-let toDockerComposeResource =
+let toDockerComposeResourceGroup =
       \(file : DockerComposeFile)
-  ->  {
-      , mapKey = file.name
-      , mapValue = {
-          , triggers = [
-              , { mapKey = "timestamp", mapValue = "\${timestamp()}" }
-              ]
-          , provisioner = [
-              , JSONProvisioner.LocalExec {
-                  , local-exec = {
-                      , command = "docker-compose up -d ${renderAbsolutePath file.file_path}"
-                      , environment = Some [
-                          , { mapKey = "DOCKER_HOST"
-                            , mapValue =
-                                HostURL/show
-                                file.host_address
+  ->  JSONResourceGroup::{
+      , null_resource = [
+          , { mapKey = file.name
+            , mapValue = {
+                , triggers = [
+                    , { mapKey = "timestamp", mapValue = "\${timestamp()}" }
+                    ]
+                , provisioner = [
+                    , JSONProvisioner.LocalExec {
+                        , local-exec = {
+                            , command = "docker-compose up -d ${renderAbsolutePath file.file_path}"
+                            , environment = Some [
+                                , { mapKey = "DOCKER_HOST"
+                                  , mapValue =
+                                      HostURL/show
+                                      file.host_address
+                                  }
+                                ]
+                            , when = None Text
+                            , interpreter = None (List Text)
                             }
-                          ]
-                      , when = None Text
-                      , interpreter = None (List Text)
-                      }
-                  }
-              ]
-          }
-      } : Entry Text JSONNullResource
+                        }
+                    ]
+                }
+            }
+          ]
+      }
 
 let toTerraformRemoteState =
       \(terraform_config : TerraformConfig.Type)
@@ -511,26 +514,21 @@ let toTerraform =
               toRemoteStateData
               terraform_config.remote_state
           }
-      , resource = {
-          , proxmox_vm_qemu =
-              List/map
-              ProxmoxVM.Type
-              (Entry Text JSONProxmoxVM)
-              toProxmoxVMResource
-              terraform_config.vms
-          , local_file =
-              List/map
-              ProxmoxVM.Type
-              (Entry Text JSONLocalFile)
-              toLocalFileResource
-              terraform_config.vms
-          , null_resource =
-              List/map
-              DockerComposeFile
-              (Entry Text JSONNullResource)
-              toDockerComposeResource
-              terraform_config.docker_compose_files
-          } : JSONResourceGroup.Type
+      , resource =
+          ( List/map
+            ProxmoxVM.Type
+            JSONResourceGroup.Type
+            toProxmoxVMResourceGroup
+            terraform_config.vms
+          )
+          #
+          ( List/map
+            DockerComposeFile
+            JSONResourceGroup.Type
+            toDockerComposeResourceGroup
+            terraform_config.docker_compose_files
+          )
+          : List JSONResourceGroup.Type
       , output =
           List/concatMap
           ProxmoxVM.Type
