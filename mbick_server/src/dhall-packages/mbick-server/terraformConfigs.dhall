@@ -152,6 +152,25 @@ let JSONOutput = {
           }
       }
 
+let JSONResourceGroup = {
+      , Type = {
+          , proxmox_vm_qemu :
+              Map Text JSONProxmoxVM
+          , local_file :
+              Map Text JSONLocalFile
+          , null_resource :
+              Map Text JSONNullResource
+          }
+      , default = {
+          , proxmox_vm_qemu =
+              [] : Map Text JSONProxmoxVM
+          , local_file =
+              [] : Map Text JSONLocalFile
+          , null_resource =
+              [] : Map Text JSONNullResource
+          }
+      }
+
 
 let TerraformS3Backend = {
       , bucket : Text
@@ -511,7 +530,7 @@ let toTerraform =
               (Entry Text JSONNullResource)
               toDockerComposeResource
               terraform_config.docker_compose_files
-          }
+          } : JSONResourceGroup.Type
       , output =
           List/concatMap
           ProxmoxVM.Type
