@@ -9,9 +9,13 @@ let types = ./types.dhall
 let config = ./config.dhall
 
 let ProxmoxVM = types.ProxmoxVM
+let DockerComposeFile = types.DockerComposeFile
 
 let networking = ../networking/package.dhall
+let HostURL = networking.HostURL
 let HostURL/show = networking.HostURL.show
+let HostAddress = networking.HostAddress
+let Protocol = ../networking/types/Protocol.dhall
 
 let renderAbsolutePath =
       \(loc : Location)
@@ -119,6 +123,26 @@ let JSONProxmoxVM =
           }
       }
 
+let JSONRemoteStateData = {
+      , mapKey : Text
+      , mapValue : {
+          , backend : Text
+          , config : {
+              , bucket : Text
+              , key : Text
+              , region : Text
+              }
+          }
+      }
+
+let JSONNullResource = {
+      , mapKey : Text
+      , mapValue : {
+          , triggers : Map Text Text
+          , provisioner : List JSONProvisioner
+          }
+      }
+
 
 let TerraformBackend = {
       , bucket : Text
@@ -127,6 +151,7 @@ let TerraformBackend = {
       }
 
 let TerraformRemoteState = {
+      , name : Text
       , backend : TerraformBackend
       , key : Text
       }
@@ -135,12 +160,14 @@ let TerraformConfig = {
       , Type = {
           , name : Text
           , backend : TerraformBackend
-          , vms : List ProxmoxVM.Type
           , remote_state : List TerraformRemoteState
+          , vms : List ProxmoxVM.Type
+          , docker_compose_files : List DockerComposeFile
           }
       , default = {
-          , vms = [] : List ProxmoxVM.Type
           , remote_state = [] : List TerraformRemoteState
+          , vms = [] : List ProxmoxVM.Type
+          , docker_compose_files = [] : List DockerComposeFile
           }
       }
 
@@ -302,9 +329,37 @@ let toProxmoxVMResource =
       }
       : JSONProxmoxVM
 
+let toDockerComposeResource =
+      \(file : DockerComposeFile)
+  ->  {
+      , mapKey = file.name
+      , mapValue = {
+          , triggers = [
+              , { mapKey = "timestamp", mapValue = "\${timestamp()}" }
+              ]
+          , provisioner = [
+              , JSONProvisioner.LocalExec {
+                  , local-exec = {
+                      , command = "docker-compose up -d ${renderAbsolutePath file.file_path}"
+                      , environment = Some [
+                          , { mapKey = "DOCKER_HOST"
+                            , mapValue =
+                                HostURL/show
+                                file.host_address
+                            }
+                          ]
+                      , when = None Text
+                      , interpreter = None (List Text)
+                      }
+                  }
+              ]
+          }
+      } : JSONNullResource
+
 let toTerraformRemoteState =
       \(terraform_config : TerraformConfig.Type)
   ->  {
+      , name = terraform_config.name
       , backend = terraform_config.backend
       , key = "${terraform_config.name}/terraform.tfstate"
       } : TerraformRemoteState
@@ -319,6 +374,20 @@ let toTerraformBackend =
           , region = remote_state.backend.region
           , dynamodb_table = remote_state.backend.dynamodb_table
           , encrypt = True
+          }
+      }
+
+let toTerraformRemoteStateData =
+      \(remote_state : TerraformRemoteState)
+  ->  {
+      , mapKey = remote_state.name
+      , mapValue = {
+          , backend = "s3"
+          , config = {
+              , bucket = remote_state.backend.bucket
+              , key = remote_state.key
+              , region = remote_state.backend.region
+              }
           }
       }
 
@@ -355,6 +424,12 @@ let toTerraform =
                   , role = "terraform"
                   }
               }
+          , terraform_remote_state =
+              List/map
+              TerraformRemoteState
+              JSONRemoteStateData
+              toTerraformRemoteStateData
+              terraform_config.remote_state
           }
       , resource = {
           , proxmox_vm_qemu =
@@ -369,6 +444,12 @@ let toTerraform =
               JSONLocalFile
               toLocalFileResource
               terraform_config.vms
+          , null_resource =
+              List/map
+              DockerComposeFile
+              JSONNullResource
+              toDockerComposeResource
+              terraform_config.docker_compose_files
           }
       }
 
@@ -424,6 +505,18 @@ in {
     , backend = terraform_backend
     , remote_state = [
         , toTerraformRemoteState docker_config
+        ]
+    , docker_compose_files = [
+        , {
+          , name = "media_server"
+          , file_path = ./. as Location
+          , host_address =
+              HostURL::{
+              , protocol = Protocol.TCP
+              , host = HostAddress.Type.IP "192.168.11.200"
+              , port = Some 2375
+              }
+          }
         ]
     }
 }

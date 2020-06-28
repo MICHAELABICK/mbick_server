@@ -1,1 +1,5 @@
-< HTTP | HTTPS | SSH >
+< HTTP
+| HTTPS
+| SSH
+| TCP
+>

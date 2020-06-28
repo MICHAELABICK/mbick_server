@@ -15,4 +15,6 @@
     ./types/ProxmoxVM.dhall
 , ProxmoxVMTemplate =
     ./types/ProxmoxVMTemplate.dhall
+, DockerComposeFile =
+    ./types/DockerComposeFile.dhall
 }
