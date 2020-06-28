@@ -94,36 +94,30 @@ let JSONProvisioner =
       >
 
 let JSONLocalFile = {
-      , mapKey : Text
-      , mapValue : {
-          , content : Text
-          , filename : Text
-          }
+      , content : Text
+      , filename : Text
       }
 
-let JSONProxmoxVM =
-      { mapKey : Text
-      , mapValue :
-          { name : Text
-          , desc : Text
-          , target_node : Text
-          , clone : Text
-          -- TODO: this needs to be updated when the terraform provider gets updated
-          -- , full_clone : Bool
-          , cores : Natural
-          , sockets : Natural
-          , numa : Bool
-          , memory : Natural
-          , agent : Natural
-          , disk : List JSONProxmoxDisk
-          , network : List JSONProxmoxDevice
-          , os_type : Text
-          , ipconfig0 : Text
-          , connection : List JSONConnection
-          , ciuser : Text
-          , sshkeys : Text
-          , provisioner : List JSONProvisioner
-          }
+let JSONProxmoxVM = {
+      , name : Text
+      , desc : Text
+      , target_node : Text
+      , clone : Text
+      -- TODO: this needs to be updated when the terraform provider gets updated
+      -- , full_clone : Bool
+      , cores : Natural
+      , sockets : Natural
+      , numa : Bool
+      , memory : Natural
+      , agent : Natural
+      , disk : List JSONProxmoxDisk
+      , network : List JSONProxmoxDevice
+      , os_type : Text
+      , ipconfig0 : Text
+      , connection : List JSONConnection
+      , ciuser : Text
+      , sshkeys : Text
+      , provisioner : List JSONProvisioner
       }
 
 let JSONRemoteStateData =
@@ -142,13 +136,10 @@ let JSONVaultGenericSecretData = {
       }
 
 let JSONNullResource = {
-      , mapKey : Text
-      , mapValue : {
-          , triggers : Map Text Text
-          , provisioner : List JSONProvisioner
-          }
+      , triggers : Map Text Text
+      , provisioner : List JSONProvisioner
       }
-
+      
 let JSONOutput = {
       , Type = {
           , value : Text
@@ -236,7 +227,7 @@ let toLocalFileResource =
               )
           , filename = "\${path.module}/files/${vm.name}_inventory"
           }
-      } : JSONLocalFile
+      } : Entry Text JSONLocalFile
 
 let toProxmoxVMResource =
       \(vm : ProxmoxVM.Type)
@@ -345,7 +336,7 @@ let toProxmoxVMResource =
               ]
           }
       }
-      : JSONProxmoxVM
+      : (Entry Text JSONProxmoxVM)
 
 let toOutputs =
       \(vm : ProxmoxVM.Type)
@@ -383,7 +374,7 @@ let toDockerComposeResource =
                   }
               ]
           }
-      } : JSONNullResource
+      } : Entry Text JSONNullResource
 
 let toTerraformRemoteState =
       \(terraform_config : TerraformConfig.Type)
@@ -408,22 +399,20 @@ let toTerraformBackend =
 
 let toTerraformRemoteStateData =
       \(remote_state : TerraformRemoteState)
-  ->  [
-      , {
-        , mapKey = remote_state.name
-        , mapValue =
-            JSON.tagNested
-            "backend"
-            "config"
-            JSONRemoteStateData
-            ( JSONRemoteStateData.s3 {
-              , bucket = remote_state.backend.bucket
-              , key = remote_state.key
-              , region = remote_state.backend.region
-              }
-            )
-        }
-      ] : Map Text (JSON.Tagged JSONRemoteStateData)
+  ->  {
+      , mapKey = remote_state.name
+      , mapValue =
+          JSON.tagNested
+          "backend"
+          "config"
+          JSONRemoteStateData
+          ( JSONRemoteStateData.s3 {
+            , bucket = remote_state.backend.bucket
+            , key = remote_state.key
+            , region = remote_state.backend.region
+            }
+          )
+      } : Entry Text (JSON.Tagged JSONRemoteStateData)
 
 let toTerraform =
       \(terraform_config : TerraformConfig.Type)
@@ -466,7 +455,7 @@ let toTerraform =
                   }
               }
           , terraform_remote_state =
-              List/concatMap
+              List/map
               TerraformRemoteState
               (Entry Text (JSON.Tagged JSONRemoteStateData))
               toTerraformRemoteStateData
@@ -476,19 +465,19 @@ let toTerraform =
           , proxmox_vm_qemu =
               List/map
               ProxmoxVM.Type
-              JSONProxmoxVM
+              (Entry Text JSONProxmoxVM)
               toProxmoxVMResource
               terraform_config.vms
           , local_file =
               List/map
               ProxmoxVM.Type
-              JSONLocalFile
+              (Entry Text JSONLocalFile)
               toLocalFileResource
               terraform_config.vms
           , null_resource =
               List/map
               DockerComposeFile
-              JSONNullResource
+              (Entry Text JSONNullResource)
               toDockerComposeResource
               terraform_config.docker_compose_files
           }
