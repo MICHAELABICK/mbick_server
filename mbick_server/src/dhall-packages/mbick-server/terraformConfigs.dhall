@@ -1,7 +1,10 @@
 let Prelude = ./Prelude.dhall
 let Text/concatMap = Prelude.Text.concatMap
 let Map = Prelude.Map.Type
+let Entry = Prelude.Map.Entry
 let List/map = Prelude.List.map
+let List/concatMap = Prelude.List.concatMap
+let List/null = Prelude.List.null
 let Location = Prelude.Location.Type
 let JSON = Prelude.JSON
 
@@ -135,11 +138,30 @@ let JSONRemoteStateData = {
           }
       }
 
+let JSONVaultGenericSecretData = {
+      , mapKey : Text
+      , mapValue : {
+          , path : Text
+          }
+      }
+
 let JSONNullResource = {
       , mapKey : Text
       , mapValue : {
           , triggers : Map Text Text
           , provisioner : List JSONProvisioner
+          }
+      }
+
+let JSONOutput = {
+      , Type = {
+          , value : Text
+          , description : Optional Text
+          , sensitive : Bool
+          }
+      , default = {
+          , description = None Text
+          , sensitive = False
           }
       }
 
@@ -329,6 +351,17 @@ let toProxmoxVMResource =
       }
       : JSONProxmoxVM
 
+let toOutputs =
+      \(vm : ProxmoxVM.Type)
+  ->  [
+      , { mapKey = "${vm.name}_address"
+        , mapValue =
+            JSONOutput::{
+            , value = vm.ip
+            }
+        }
+      ] : Map Text JSONOutput.Type
+
 let toDockerComposeResource =
       \(file : DockerComposeFile)
   ->  {
@@ -414,10 +447,17 @@ let toTerraform =
               }
           }
       , data = {
-          , vault_generic_secret = {
-              , proxmox_user = { path = "proxmox_user/terraform" }
-              , default_user = { path = "secret/default_user" }
-              }
+          , vault_generic_secret =
+              if (List/null ProxmoxVM.Type terraform_config.vms)
+              then [] : List JSONVaultGenericSecretData
+              else [
+              , { mapKey = "proxmox_user"
+                , mapValue = { path = "proxmox_user/terraform" }
+                }
+              , { mapKey = "default_user"
+                , mapValue = { path = "secret/default_user" }
+                }
+              ]
           , vault_aws_access_credentials = {
               , terraform = {
                   , backend = "aws"
@@ -451,6 +491,12 @@ let toTerraform =
               toDockerComposeResource
               terraform_config.docker_compose_files
           }
+      , output =
+          List/concatMap
+          ProxmoxVM.Type
+          (Entry Text JSONOutput.Type)
+          toOutputs
+          terraform_config.vms
       }
 
 
@@ -475,7 +521,7 @@ let largeVM =
       , target_node = "node1"
       , cores = 4
       , sockets = 2
-      , memory = 8192
+      , memory = 16384
       , disk_gb = 20
       , ip = ip
       , subnet = config.subnet
@@ -498,10 +544,10 @@ let docker_config =
 in {
 , docker_dev =
     toTerraform docker_config
-, media_server_dev =
+, services_dev =
     toTerraform
     TerraformConfig::{
-    , name = "media_server_dev"
+    , name = "services_dev"
     , backend = terraform_backend
     , remote_state = [
         , toTerraformRemoteState docker_config
