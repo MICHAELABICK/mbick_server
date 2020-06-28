@@ -153,15 +153,18 @@ let JSONOutput = {
       }
 
 
-let TerraformBackend = {
+let TerraformS3Backend = {
       , bucket : Text
       , region : Text
       , dynamodb_table : Text
       }
 
+let TerraformBackend =
+      < S3 : TerraformS3Backend >
+
 let TerraformS3RemoteState = {
       , name : Text
-      , backend : TerraformBackend
+      , backend : TerraformS3Backend
       , key : Text
       }
 
@@ -381,11 +384,18 @@ let toDockerComposeResource =
 
 let toTerraformRemoteState =
       \(terraform_config : TerraformConfig.Type)
-  ->  TerraformRemoteState.S3 {
-      , name = terraform_config.name
-      , backend = terraform_config.backend
-      , key = "${terraform_config.name}/terraform.tfstate"
-      } : TerraformRemoteState
+  ->  let remote_state =
+            merge
+            { S3 =
+                \(x : TerraformS3Backend)
+            ->  TerraformRemoteState.S3 {
+                , name = terraform_config.name
+                , backend = x
+                , key = "${terraform_config.name}/terraform.tfstate"
+                }
+            }
+            terraform_config.backend
+      in remote_state : TerraformRemoteState
 
 let toBackend =
       \(terraform_config : TerraformConfig.Type)
@@ -511,7 +521,8 @@ let toTerraform =
       }
 
 
-let terraform_backend : TerraformBackend = {
+let terraform_backend =
+      TerraformBackend.S3 {
       , bucket = "mbick-server.terraform-state"
       , region = "us-west-1"
       , dynamodb_table = "terraform-lock"
@@ -540,15 +551,18 @@ let largeVM =
       }
 
 
+let docker01 =
+      largeVM "docker01" "192.168.11.200" // {
+      , groups = [ "docker_host" ]
+      , disk_gb = 100
+      }
+    
 let docker_config =
       TerraformConfig::{
       , name = "docker_dev"
       , backend = terraform_backend
       , vms = [
-          , largeVM "docker01" "192.168.11.200" // {
-              , groups = [ "docker_host" ]
-              , disk_gb = 100
-              }
+          , docker01
           ]
       }
 
