@@ -422,6 +422,18 @@ let toRemoteStateData =
           data_config
       } : Entry Text (JSON.Tagged JSONRemoteStateData)
 
+let foldJSONResourceGroups =
+      \(x : JSONResourceGroup.Type)
+  ->  \(y : JSONResourceGroup.Type)
+  ->  {
+      , proxmox_vm_qemu =
+          x.proxmox_vm_qemu # y.proxmox_vm_qemu
+      , local_file =
+          x.local_file # y.local_file
+      , null_resource =
+          x.null_resource # y.null_resource
+      } : JSONResourceGroup.Type
+
 let toTerraform =
       \(terraform_config : types.Config.Type)
   ->  \(lab_config : mbick-server-types.Config)
@@ -473,20 +485,27 @@ let toTerraform =
               terraform_config.remote_state
           }
       , resource =
-          ( List/map
-            ProxmoxVM.Type
-            JSONResourceGroup.Type
-            toLabProxmoxVMResourceGroup
-            terraform_config.vms
+          List/fold
+          JSONResourceGroup.Type
+          (
+            ( List/map
+              ProxmoxVM.Type
+              JSONResourceGroup.Type
+              toLabProxmoxVMResourceGroup
+              terraform_config.vms
+            )
+            #
+            ( List/map
+              DockerComposeFile
+              JSONResourceGroup.Type
+              toDockerComposeResourceGroup
+              terraform_config.docker_compose_files
+            )
           )
-          #
-          ( List/map
-            DockerComposeFile
-            JSONResourceGroup.Type
-            toDockerComposeResourceGroup
-            terraform_config.docker_compose_files
-          )
-          : List JSONResourceGroup.Type
+          JSONResourceGroup.Type
+          foldJSONResourceGroups
+          JSONResourceGroup.default
+          : JSONResourceGroup.Type
       , output =
           List/concatMap
           ProxmoxVM.Type
