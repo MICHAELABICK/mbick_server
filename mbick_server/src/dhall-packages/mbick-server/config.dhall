@@ -1,7 +1,6 @@
-let types = ./types.dhall
 let networking = ../networking/package.dhall
 
-let HostURL = networking.HostURL
+let types = ./types.dhall
 
 
 let config =
@@ -9,7 +8,7 @@ let config =
           ../../paths.dhall
       , proxmox_api =
           { address =
-              HostURL::{
+              networking.HostURL::{
               , protocol = networking.Protocol.HTTPS
               , host = networking.HostAddress.Type.IP "192.168.11.101"
               , port = Some 8006
@@ -23,7 +22,7 @@ let config =
           }
       , vault_api = {
           , address =
-              HostURL::{
+              networking.HostURL::{
               , protocol = networking.Protocol.HTTP
               , host = networking.HostAddress.Type.IP "192.168.11.104"
               , port = Some 8200

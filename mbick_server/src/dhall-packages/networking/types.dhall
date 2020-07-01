@@ -12,6 +12,6 @@
     ./types/HostAddress/Type.dhall
 , HostURL =
     ./types/HostURL/Type.dhall
-, Protocol=
+, Protocol =
     ./types/Protocol.dhall
 }
