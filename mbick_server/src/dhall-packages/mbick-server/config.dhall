@@ -1,7 +1,5 @@
-let types = ./types.dhall
+let mbick-server-types = ../mbick-server-types/package.dhall
 let networking = ../networking/package.dhall
-
-let HostURL = networking.HostURL
 
 
 let config =
@@ -9,7 +7,7 @@ let config =
           ../../paths.dhall
       , proxmox_api =
           { address =
-              HostURL::{
+              networking.HostURL::{
               , protocol = networking.Protocol.HTTPS
               , host = networking.HostAddress.Type.IP "192.168.11.101"
               , port = Some 8006
@@ -23,7 +21,7 @@ let config =
           }
       , vault_api = {
           , address =
-              HostURL::{
+              networking.HostURL::{
               , protocol = networking.Protocol.HTTP
               , host = networking.HostAddress.Type.IP "192.168.11.104"
               , port = Some 8200
@@ -31,4 +29,4 @@ let config =
           }
       }
 
-in config : types.Config
+in config : mbick-server-types.Config
