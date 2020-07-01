@@ -1,21 +1,15 @@
 let Prelude = ./Prelude.dhall
 let Location = Prelude.Location.Type
 
-let terraform = ../terraform/package.dhall
+let mbick-server-terraform = ../mbick-server-terraform/package.dhall
 let mbick-server-types = ../mbick-server-types/package.dhall
 let networking = ../networking/package.dhall
 
-let HostURL = networking.HostURL
-let HostURL/show = networking.HostURL.show
-let HostAddress = networking.HostAddress
-let Protocol = networking.Protocol
-
-let types = ./types.dhall
 let lab_config = ./config.dhall
 
 
 let terraform_backend =
-      terraform.types.Backend.S3 {
+      mbick-server-terraform.types.Backend.S3 {
       , bucket = "mbick-server.terraform-state"
       , region = "us-west-1"
       , dynamodb_table = "terraform-lock"
@@ -44,8 +38,8 @@ let largeVM =
       }
 
 let toTerraform =
-      \(terraform_config : terraform.types.Config.Type)
-  ->  terraform.toTerraform terraform_config lab_config
+      \(terraform_config : mbick-server-terraform.types.Config.Type)
+  ->  mbick-server-terraform.toTerraform terraform_config lab_config
 
 
 let docker01 =
@@ -55,7 +49,7 @@ let docker01 =
       }
     
 let docker_config =
-      terraform.types.Config::{
+      mbick-server-terraform.types.Config::{
       , name = "docker_dev"
       , backend = terraform_backend
       , vms = [
@@ -68,20 +62,20 @@ in {
     toTerraform docker_config
 , services_dev =
     toTerraform
-    terraform.types.Config::{
+    mbick-server-terraform.types.Config::{
     , name = "services_dev"
     , backend = terraform_backend
     , remote_state = [
-        , terraform.toTerraformRemoteState docker_config
+        , mbick-server-terraform.toTerraformRemoteState docker_config
         ]
     , docker_compose_files = [
         , {
           , name = "media_server"
           , file_path = ./. as Location
           , host_address =
-              HostURL::{
-              , protocol = Protocol.TCP
-              , host = HostAddress.Type.IP "192.168.11.200"
+              networking.HostURL::{
+              , protocol = networking.Protocol.TCP
+              , host = networking.HostAddress.Type.IP "192.168.11.200"
               , port = Some 2375
               }
           }
