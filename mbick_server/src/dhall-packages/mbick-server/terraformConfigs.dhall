@@ -8,6 +8,26 @@ let networking = ../networking/package.dhall
 let lab_config = ./config.dhall
 
 
+let renderPath =
+      \(loc : Location)
+  ->  merge {
+      , Local =
+          \(x : Text) -> x
+      , Remote =
+          \(x : Text) -> ""
+      , Environment =
+          \(x : Text) -> ""
+      , Missing = ""
+      }
+      loc
+
+let renderDockerComposeFilePath =
+      \(compose_file : Text)
+  ->  let docker_dir =
+            renderPath lab_config.project_paths.docker
+      in Location.Local "${docker_dir}/${compose_file}"
+
+
 let terraform_backend =
       mbick-server-terraform.types.Backend.S3 {
       , bucket = "mbick-server.terraform-state"
@@ -71,7 +91,8 @@ in {
     , docker_compose_files = [
         , {
           , name = "media_server"
-          , file_path = ./. as Location
+          , file_path =
+              renderDockerComposeFilePath "media_server/docker-compose.yml"
           , host_address =
               networking.HostURL::{
               , protocol = networking.Protocol.TCP

@@ -356,7 +356,12 @@ let toDockerComposeResourceGroup =
                 , provisioner = [
                     , JSONProvisioner.LocalExec {
                         , local-exec = {
-                            , command = "docker-compose up -d ${renderAbsolutePath file.file_path}"
+                            , command =
+                                "docker-compose "
+                                ++ "-f ${renderAbsolutePath file.file_path} "
+                                ++ "up "
+                                ++ "--build "
+                                ++ "-d"
                             , environment = Some [
                                 , { mapKey = "DOCKER_HOST"
                                   , mapValue =
@@ -416,8 +421,8 @@ let toRemoteStateData =
       , mapKey = name
       , mapValue =
           JSON.tagNested
-          "backend"
           "config"
+          "backend"
           JSONRemoteStateData
           data_config
       } : Entry Text (JSON.Tagged JSONRemoteStateData)
