@@ -63,5 +63,5 @@ ansible_python_interpreter=/usr/bin/python3
 ansible_ssh_extra_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 # ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
 
-[k3s_control_node]
+[k3s_control_node:vars]
 k3s_control_node=true
