@@ -1,6 +1,5 @@
+let mbick-server-types = ../mbick-server-types/package.dhall
 let networking = ../networking/package.dhall
-
-let types = ./types.dhall
 
 
 let config =
@@ -30,4 +29,4 @@ let config =
           }
       }
 
-in config : types.Config
+in config : mbick-server-types.Config
