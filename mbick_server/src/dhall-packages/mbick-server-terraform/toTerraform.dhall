@@ -361,6 +361,7 @@ let toDockerComposeResourceGroup =
                                 ++ "-f ${renderAbsolutePath file.file_path} "
                                 ++ "up "
                                 ++ "--build "
+                                ++ "--remove-orphans "
                                 ++ "-d"
                             , environment = Some [
                                 , { mapKey = "DOCKER_HOST"

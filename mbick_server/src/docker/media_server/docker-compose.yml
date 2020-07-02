@@ -1,67 +1,6 @@
 version: "3.8"
 
 services:
-  traefik:
-    image: traefik:v2.2
-    container_name: traefik
-    networks:
-      - traefik
-    ports:
-      - 80:80
-      # The Web UI (enabled by --api.insecure=true)
-      - 8090:8080
-    volumes:
-      # For Traefik's automated config to work, the docker socket needs to be
-      # mounted. There are some security implications to this.
-      # See https://docs.docker.com/engine/security/security/#docker-daemon-attack-surface
-      # and https://docs.traefik.io/providers/docker/#docker-api-access
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    command:
-      # - "--log.level=DEBUG"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=traefik"
-      - "--providers.docker.defaultRule=Host(`{{ normalize .Name }}.michaelbick.duckdns.org`)"
-      - "--entrypoints.web.address=:80"
-    labels:
-      - "traefik.enable=true"
-      - 'traefik.http.routers.traefik.rule=Host(`traefik.michaelbick.duckdns.org`)'
-      - 'traefik.http.routers.traefik.service=api@internal'
-    restart: unless-stopped
-
-  pihole:
-    container_name: pihole
-    build:
-      context: ./pihole
-      args:
-        PIHOLE_VERSION: v5.0
-    networks:
-      macvlan:
-        ipv4_address: 192.168.11.3
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp"
-      - "80:80/tcp"
-      - "443:443/tcp"
-    environment:
-      TZ: America/Los_Angeles
-      WEBPASSWORD: 'this-is-a-Password!'
-      DNS1: 1.1.1.1
-      DNS2: 1.0.0.1
-    # Volumes store your data between container upgrades
-    volumes:
-       - pihole-config:/etc/pihole/
-    dns:
-      - 127.0.0.1 # Required to resolve dhcp hostnames from Pi-hole's DNSMasq
-      # - 1.1.1.1 # Optional backup if DNSMasq has problems starting
-    # Recommended but not required (DHCP needs NET_ADMIN)
-    # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    # cap_add:
-    #   - NET_ADMIN
-    restart: unless-stopped
-
   sonarr:
     image: linuxserver/sonarr
     container_name: sonarr
@@ -170,32 +109,18 @@ services:
 
 networks:
   traefik:
-    # external: true
+    external: true
     name: traefik
 
   internal:
     internal: true
 
   macvlan:
-    driver: macvlan
-    driver_opts:
-      parent: eth0
-    ipam:
-      config:
-        - subnet: 192.168.11.0/24
+    external: true
+    name: macvlan
 
 
 volumes:
-  pihole-config:
-    driver: local-persist
-    driver_opts:
-      mountpoint: /mnt/docker_volumes/pihole-config
-
-  pihole-dnsmasq:
-    driver: local-persist
-    driver_opts:
-      mountpoint: /mnt/docker_volumes/pihole-dnsmasq
-
   sonarr-config:
     driver: local-persist
     driver_opts:

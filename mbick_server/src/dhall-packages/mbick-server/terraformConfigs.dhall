@@ -90,6 +90,17 @@ in {
         ]
     , docker_compose_files = [
         , {
+          , name = "admin_infra"
+          , file_path =
+              renderDockerComposeFilePath "admin_infra/docker-compose.yml"
+          , host_address =
+              networking.HostURL::{
+              , protocol = networking.Protocol.TCP
+              , host = networking.HostAddress.Type.IP "192.168.11.200"
+              , port = Some 2375
+              }
+          }
+        , {
           , name = "media_server"
           , file_path =
               renderDockerComposeFilePath "media_server/docker-compose.yml"
