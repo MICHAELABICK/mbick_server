@@ -1,6 +1,4 @@
 {
-, types =
-    ./types.dhall
 , config =
     ./config.dhall
 , packer =

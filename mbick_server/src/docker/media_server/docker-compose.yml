@@ -1,40 +1,170 @@
-version: "3"
+version: "3.8"
 
 services:
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - UMASK_SET=022 #optional
+    volumes:
+      - sonarr-config:/config
+      - media-center:/data
+    networks:
+      - internal
+      - traefik
+    ports:
+      - 8989:8989
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.michaelbick.duckdns.org`)"
+    restart: unless-stopped
+
   radarr:
     image: linuxserver/radarr
     container_name: radarr
     environment:
-      - PUID=2001
-      - PGID=2001
+      - PUID=1000
+      - PGID=1000
       - TZ=America/Los_Angeles
-      # - UMASK_SET=022 # causes permissions issues with NFS
+      - UMASK_SET=022 #optional
     volumes:
       - radarr-config:/config
-      - movies:/movies
-      - downloads:/downloads
+      - media-center:/data
+    networks:
+      - internal
+      - traefik
     ports:
       - 7878:7878
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.michaelbick.duckdns.org`)"
     restart: unless-stopped
 
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - AUTO_UPDATE=true
+      # - RUN_OPTS=run options here #optional
+    volumes:
+      - jackett-config:/config
+      # - downloads:/downloads
+    networks:
+      - internal
+      - traefik
+    ports:
+      - 9117:9117
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jackett.rule=Host(`jackett.michaelbick.duckdns.org`)"
+    restart: unless-stopped
+
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - UMASK_SET=022
+      - WEBUI_PORT=8080
+    volumes:
+      - qbittorrent-config:/config
+      - torrents:/downloads
+    networks:
+      - internal
+      - traefik
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+      - 8080:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.michaelbick.duckdns.org`)"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+    restart: unless-stopped
+
+  plex:
+    container_name: plex
+    image: plexinc/pms-docker
+    networks:
+      macvlan:
+        # ipv4_address: 192.168.11.220
+    environment:
+      TZ: America/Los_Angeles
+      PLEX_UID: 1000
+      PLEX_GID: 1000
+    volumes:
+       - plex-config:/config
+       - plex-transcode:/transcode
+       - media:/data
+    restart: unless-stopped
+
+
+networks:
+  traefik:
+    external: true
+    name: traefik
+
+  internal:
+    internal: true
+
+  macvlan:
+    external: true
+    name: macvlan
+
+
 volumes:
+  sonarr-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/sonarr-config
+
   radarr-config:
-    # driver: local
-    # driver_opts:
-    #   type: nfs
-    #   o: 'addr=192.168.11.111,rw'
-    #   device: ':/mnt/store/docker/configs/radarr'
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/radarr-config
 
-  movies:
+  jackett-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/jackett-config
+
+  qbittorrent-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/qbittorrent-config
+
+  plex-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/plex-config
+
+  plex-transcode:
+
+  media-center:
     driver: local
     driver_opts:
       type: nfs
       o: 'addr=192.168.11.111,rw'
-      device: ':/mnt/store/media/movies'
+      device: ':/mnt/store/media_center'
 
-  downloads:
+  media:
     driver: local
     driver_opts:
       type: nfs
       o: 'addr=192.168.11.111,rw'
-      device: ':/mnt/store/downloads'
+      device: ':/mnt/store/media_center/media'
+
+  torrents:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: 'addr=192.168.11.111,rw'
+      device: ':/mnt/store/media_center/torrents'

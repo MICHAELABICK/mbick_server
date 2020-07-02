@@ -30,7 +30,7 @@
 
 - hosts: docker01
   pre_tasks:
-    - name: Install storage packages needed for volume mounts
+    - name: Install storage packages for volume mounts
       become: yes
       package:
         name:

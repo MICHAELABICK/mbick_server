@@ -1,9 +1,8 @@
-
 let Prelude = ./Prelude.dhall
-let types = ./types.dhall
+let Location = Prelude.Location.Type
+
 let networking = ../networking/package.dhall
 
-let Location = Prelude.Location.Type
 let HostURL = networking.HostURL
 let HostURL/show = HostURL.show
 
@@ -12,9 +11,9 @@ let paths = config.project_paths
 
 
 let showBaseURL =
-      \(url : HostURL.Type)
+      \(url : networking.HostURL.Type)
   ->  let base_url = url // { endpoint = None Text }
-      in HostURL/show base_url
+      in networking.HostURL.show base_url
 
 let defaults = {
       , ansible_dir = paths.ansible.playbooks
@@ -22,7 +21,7 @@ let defaults = {
       , proxmox_api_host =
           showBaseURL config.proxmox_api.address
       , proxmox_api_url =
-          HostURL/show config.proxmox_api.address
+          networking.HostURL.show config.proxmox_api.address
       } :
       { ansible_dir : Location
       , ansible_inventory_dir : Location

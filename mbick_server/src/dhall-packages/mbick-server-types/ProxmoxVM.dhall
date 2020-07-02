@@ -1,4 +1,4 @@
-let networking = ../../networking/types.dhall
+let networking = ../networking/package.dhall
 
 in
 { Type =

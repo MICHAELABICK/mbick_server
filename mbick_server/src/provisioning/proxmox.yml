@@ -3,3 +3,8 @@
   roles:
     - { role: pve-repos, become: yes }
     # - { role: geerlingguy.ansible-role-packer, become: yes }
+  tasks:
+    - name: Install OVS for networking
+      package:
+        name: openvswitch-switch
+        state: present

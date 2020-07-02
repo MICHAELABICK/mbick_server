@@ -8,6 +8,7 @@ let show =
             , HTTP = "http"
             , HTTPS = "https"
             , SSH = "ssh"
+            , TCP = "tcp"
             }
             url.protocol
       let port =

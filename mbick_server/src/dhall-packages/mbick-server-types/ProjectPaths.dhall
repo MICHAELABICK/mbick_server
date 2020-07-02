@@ -6,4 +6,6 @@ in {
     Location
 , ansible :
     ./AnsiblePaths.dhall
+, docker :
+    Location
 }
