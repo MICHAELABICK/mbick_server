@@ -106,6 +106,27 @@ services:
        - media:/data
     restart: unless-stopped
 
+  bazarr:
+    image: linuxserver/bazarr:94fc3ae8-ls28
+    container_name: bazarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      # - UMASK_SET=022 #optional
+    volumes:
+      - bazarr-config:/config
+      - media-center:/data
+    networks:
+      - internal
+      - traefik
+    ports:
+      - 6767:6767
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.michaelbick.duckdns.org`)"
+    restart: unless-stopped
+
 
 networks:
   traefik:
@@ -147,6 +168,11 @@ volumes:
       mountpoint: /mnt/docker_volumes/plex-config
 
   plex-transcode:
+
+  bazarr-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/bazarr-config
 
   media-center:
     driver: local
