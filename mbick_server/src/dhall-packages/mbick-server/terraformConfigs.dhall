@@ -111,6 +111,16 @@ in {
               , port = Some 2375
               }
           }
+        , {
+          , name = "syncthing"
+          , file_path = renderDockerComposeFilePath "syncthing/docker-compose.yml"
+          , host_address =
+              networking.HostURL::{
+              , protocol = networking.Protocol.TCP
+              , host = networking.HostAddress.Type.IP "192.168.11.200"
+              , port = Some 2375
+              }
+          }
         ]
     }
 }
