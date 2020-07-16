@@ -28,6 +28,11 @@ let renderDockerComposeFilePath =
       in Location.Local "${docker_dir}/${compose_file}"
 
 
+let LabEnvironment = <
+      | Prod
+      | Dev
+      >
+
 let terraform_backend =
       mbick-server-terraform.types.Backend.S3 {
       , bucket = "mbick-server.terraform-state"
@@ -59,7 +64,21 @@ let largeVM =
 
 let toTerraform =
       \(terraform_config : mbick-server-terraform.types.Config.Type)
-  ->  mbick-server-terraform.toTerraform terraform_config lab_config
+  ->  \(environment : LabEnvironment)
+  ->  let name_suffix =
+            merge {
+            , Prod = "prod"
+            , Dev = "dev"
+            }
+            environment
+      let name = "${terraform_config.name}_${name_suffix}"
+      in
+      mbick-server-terraform.toTerraform
+      ( terraform_config // {
+        , name = name
+        }
+      )
+      lab_config
 
 
 let docker01 =
@@ -70,57 +89,63 @@ let docker01 =
     
 let docker_config =
       mbick-server-terraform.types.Config::{
-      , name = "docker_dev"
+      , name = "docker"
       , backend = terraform_backend
       , vms = [
           , docker01
           ]
       }
 
+let services_config =
+      mbick-server-terraform.types.Config::{
+      , name = "services"
+      , backend = terraform_backend
+      , remote_state = [
+          , mbick-server-terraform.toTerraformRemoteState docker_config
+          ]
+      , docker_compose_files = [
+          , {
+            , name = "admin_infra"
+            , file_path =
+                renderDockerComposeFilePath "admin_infra/docker-compose.yml"
+            , host_address =
+                networking.HostURL::{
+                , protocol = networking.Protocol.TCP
+                , host = networking.HostAddress.Type.IP "192.168.11.200"
+                , port = Some 2375
+                }
+            }
+          , {
+            , name = "media_server"
+            , file_path =
+                renderDockerComposeFilePath "media_server/docker-compose.yml"
+            , host_address =
+                networking.HostURL::{
+                , protocol = networking.Protocol.TCP
+                , host = networking.HostAddress.Type.IP "192.168.11.200"
+                , port = Some 2375
+                }
+            }
+          , {
+            , name = "syncthing"
+            , file_path = renderDockerComposeFilePath "syncthing/docker-compose.yml"
+            , host_address =
+                networking.HostURL::{
+                , protocol = networking.Protocol.TCP
+                , host = networking.HostAddress.Type.IP "192.168.11.200"
+                , port = Some 2375
+                }
+            }
+          ]
+      }
+
 in {
+, docker_prod =
+    toTerraform docker_config LabEnvironment.Prod
 , docker_dev =
-    toTerraform docker_config
+    toTerraform docker_config LabEnvironment.Dev
+, services_prod =
+    toTerraform services_config LabEnvironment.Prod
 , services_dev =
-    toTerraform
-    mbick-server-terraform.types.Config::{
-    , name = "services_dev"
-    , backend = terraform_backend
-    , remote_state = [
-        , mbick-server-terraform.toTerraformRemoteState docker_config
-        ]
-    , docker_compose_files = [
-        , {
-          , name = "admin_infra"
-          , file_path =
-              renderDockerComposeFilePath "admin_infra/docker-compose.yml"
-          , host_address =
-              networking.HostURL::{
-              , protocol = networking.Protocol.TCP
-              , host = networking.HostAddress.Type.IP "192.168.11.200"
-              , port = Some 2375
-              }
-          }
-        , {
-          , name = "media_server"
-          , file_path =
-              renderDockerComposeFilePath "media_server/docker-compose.yml"
-          , host_address =
-              networking.HostURL::{
-              , protocol = networking.Protocol.TCP
-              , host = networking.HostAddress.Type.IP "192.168.11.200"
-              , port = Some 2375
-              }
-          }
-        , {
-          , name = "syncthing"
-          , file_path = renderDockerComposeFilePath "syncthing/docker-compose.yml"
-          , host_address =
-              networking.HostURL::{
-              , protocol = networking.Protocol.TCP
-              , host = networking.HostAddress.Type.IP "192.168.11.200"
-              , port = Some 2375
-              }
-          }
-        ]
-    }
+    toTerraform services_config LabEnvironment.Dev
 }
