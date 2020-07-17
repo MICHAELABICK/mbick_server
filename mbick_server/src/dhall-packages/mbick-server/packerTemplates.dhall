@@ -23,7 +23,7 @@ let Builder = <
               Text
           , node :
               Text
-          , socket :
+          , sockets :
               Text
           , cores :
               Text
@@ -81,7 +81,7 @@ let Builder = <
           , memory :
               Text
           , disk_size :
-              Text
+              Natural
           , guest_os_type :
               Text
           , iso_url :
@@ -134,7 +134,7 @@ let toPacker =
       \(template : VMTemplate)
   ->  let template_fullname = "${template.name}-{{timestamp}}"
       let memory = "1024"
-      let disk_size = "20000M"
+      let disk_size_mb = 20000
       let boot_command = [
             , "<esc><esc><enter><wait>"
             , "/install/vmlinuz "
@@ -164,7 +164,7 @@ let toPacker =
             , password = "{{user `proxmox_password`}}"
             , vm_name = template_fullname
             , node = "node1"
-            , socket = "1"
+            , sockets = "1"
             , cores = "2"
             , memory = memory
             , os = "l26"
@@ -177,7 +177,7 @@ let toPacker =
             , disks = [
                 , {
                   , type = "scsi"
-                  , disk_size = "20000M"
+                  , disk_size = "${Natural/show disk_size_mb}M"
                   , storage_pool = "vm-images"
                   , storage_pool_type = "nfs"
                   , format = "qcow2"
@@ -199,7 +199,7 @@ let toPacker =
           , Builder.virtualbox-iso {
             , output_directory = "output-${template_fullname}-virtualbox-iso"
             , memory = memory
-            , disk_size = disk_size
+            , disk_size = disk_size_mb
             , guest_os_type = template.image.virtualbox_guest_os_type
             , iso_url = template.image.iso_url
             , iso_checksum = template.image.checksum
