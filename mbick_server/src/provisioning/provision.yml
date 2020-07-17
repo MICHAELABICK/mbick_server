@@ -15,15 +15,6 @@
     - { role: wait_for_lock, become: yes }
 
 - hosts: docker01
-  pre_tasks:
-    - name: Install storage packages for volume mounts
-      become: yes
-      package:
-        name:
-          - nfs-common
-          - open-iscsi
-        state: present
-
   roles:
     - role: iscsi_mount
       become: yes
