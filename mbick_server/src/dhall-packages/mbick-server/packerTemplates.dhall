@@ -218,7 +218,7 @@ let toPacker =
               util.renderAnsiblePlaybookPath lab_config "bake_image.yml"
           , extra_arguments = [
               , "-i"
-              , util.renderAnsibleInventoryPath lab_config
+              , "${util.renderAnsibleInventoryPath lab_config}/group_inventory"
               , "-e"
               , "ansible_become_password=${ssh_password}"
               ]
@@ -256,7 +256,7 @@ let ubuntu_bionic = {
           , virtualbox_guest_os_type = "Ubuntu_64"
           }
       , http_directory =
-          "{{template_dir}}/ubuntu-bionic/http"
+          "{{template_dir}}/ubuntu_bionic/http"
       , boot_command_suffix = [
          , "auto "
          , "console-setup/ask_detect=false "
