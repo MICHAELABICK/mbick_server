@@ -2,6 +2,11 @@ let Prelude = ./Prelude.dhall
 let List/map = Prelude.List.map
 let JSON = Prelude.JSON
 
+let networking = ../networking/package.dhall
+
+let lab_config = ./config.dhall
+let util = ./util.dhall
+
 
 let Builder = <
       | proxmox :
@@ -145,7 +150,8 @@ let toPacker =
           (\(x : Builder) -> JSON.tagInline "type" Builder x)
           [
           , Builder.proxmox {
-            , proxmox_url = "TODO"
+            , proxmox_url =
+                networking.HostURL.show lab_config.proxmox_api.address
             , insecure_skip_tls_verify = True
             , username =
                 "{{ vault `/proxmox_user/data/packer` `username` }}"
@@ -208,10 +214,11 @@ let toPacker =
         , {
           , type = "ansible"
           , pause_before = "5s"
-          , playbook_file = "TODO/bake_image.yml"
+          , playbook_file =
+              util.renderAnsiblePlaybookPath lab_config "bake_image.yml"
           , extra_arguments = [
               , "-i"
-              , "TODO/group_inventory"
+              , util.renderAnsibleInventoryPath lab_config
               , "-e"
               , "ansible_become_password=${ssh_password}"
               ]
