@@ -105,6 +105,9 @@
     # This is a hotfix
     # until geerlinguy.docker implements the daemon options
     - { role: docker, become: yes}
+    - role: docker_local_persist
+      become: yes
+      docker_local_persist_version: 1.3.0
   tasks:
     - name: Install storage packages for volume mounts
       become: yes

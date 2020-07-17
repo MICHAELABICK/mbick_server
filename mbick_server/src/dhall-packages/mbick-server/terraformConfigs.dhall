@@ -36,12 +36,12 @@ let terraform_backend =
       }
 
 let ubuntuTemplate : mbick-server-types.ProxmoxVMTemplate = {
-      , name = "ubuntu-bionic-1595007733"
+      , name = "ubuntu-bionic-1595014229"
       , groups = [ "ubuntu_bionic" ]
       }
 
 let dockerTemplate : mbick-server-types.ProxmoxVMTemplate = {
-      , name = "docker-1595002824"
+      , name = "docker-1595012750"
       , groups = [
           , "ubuntu_bionic"
           , "docker_host"

@@ -51,6 +51,8 @@ let Builder = <
               , format :
                   Text
               }
+          , scsi_controller :
+              Text
           , qemu_agent :
               Bool
           , iso_file :
@@ -190,6 +192,7 @@ let toPacker =
                   , format = "qcow2"
                   }
                 ]
+            , scsi_controller = "virtio-scsi-pci"
             , qemu_agent = True
             , iso_file = template.image.proxmox_file
             , http_directory = template.http_directory
