@@ -14,19 +14,19 @@
   roles:
     - { role: wait_for_lock, become: yes }
 
-- hosts: docker_host
-  vars:
-    docker_daemon_json_options:
-      hosts:
-        - tcp://0.0.0.0:2375
-        - unix:///var/run/docker.sock
+# - hosts: docker_host
+#   vars:
+#     docker_daemon_json_options:
+#       hosts:
+#         - tcp://0.0.0.0:2375
+#         - unix:///var/run/docker.sock
 
-  roles:
-    - { role: docker_override_systemd, become: yes }
-    # - { role: geerlingguy.docker, become: yes }
-    # This is a hotfix
-    # until geerlinguy.docker implements the daemon options
-    - { role: docker, become: yes}
+#   roles:
+#     - { role: docker_override_systemd, become: yes }
+#     # - { role: geerlingguy.docker, become: yes }
+#     # This is a hotfix
+#     # until geerlinguy.docker implements the daemon options
+#     - { role: docker, become: yes}
 
 - hosts: docker01
   pre_tasks:

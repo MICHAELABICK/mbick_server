@@ -24,9 +24,9 @@ let Builder = <
           , node :
               Text
           , sockets :
-              Text
+              Natural
           , cores :
-              Text
+              Natural
           , memory :
               Text
           , os :
@@ -79,7 +79,7 @@ let Builder = <
           , output_directory :
               Text
           , memory :
-              Text
+              Natural
           , disk_size :
               Natural
           , guest_os_type :
@@ -125,6 +125,13 @@ let VMTemplate = {
       , groups : List Text
       }
 
+let ChildVMTemplate = {
+      , name : Text
+      , parent : VMTemplate
+      , description : Text
+      , groups : List Text
+      }
+
 
 let ssh_username = "packer"
 let ssh_password = "packer"
@@ -133,8 +140,8 @@ let ssh_fullname = "packer"
 let toPacker =
       \(template : VMTemplate)
   ->  let template_fullname = "${template.name}-{{timestamp}}"
-      let memory = "1024"
-      let disk_size_mb = 20000
+      let memory_mb = 1024
+      let disk_size_mb = 25000
       let boot_command = [
             , "<esc><esc><enter><wait>"
             , "/install/vmlinuz "
@@ -164,9 +171,9 @@ let toPacker =
             , password = "{{user `proxmox_password`}}"
             , vm_name = template_fullname
             , node = "node1"
-            , sockets = "1"
-            , cores = "2"
-            , memory = memory
+            , sockets = 1
+            , cores = 2
+            , memory = "${Natural/show memory_mb}"
             , os = "l26"
             , network_adapters = [
                 , {
@@ -190,7 +197,7 @@ let toPacker =
             , boot_command = boot_command
             , ssh_username = ssh_username
             , ssh_password = ssh_password
-            , ssh_timeout = "15m"
+            , ssh_timeout = "30m"
             , unmount_iso = True
             , template_description =
                 "${template.description}, generated on {{ isotime \"2006-01-02T15:04:05Z\" }}"
@@ -198,7 +205,7 @@ let toPacker =
             }
           , Builder.virtualbox-iso {
             , output_directory = "output-${template_fullname}-virtualbox-iso"
-            , memory = memory
+            , memory = memory_mb
             , disk_size = disk_size_mb
             , guest_os_type = template.image.virtualbox_guest_os_type
             , iso_url = template.image.iso_url
@@ -245,6 +252,19 @@ let toPacker =
           ]
       }
 
+let toVMTemplate =
+      \(child : ChildVMTemplate)
+  ->  let parent = child.parent
+      let template =
+            parent // {
+            , name = child.name
+            , description = child.description
+            , groups =
+              parent.groups
+              # child.groups
+            }
+      in template
+
 
 let locale = "en_US"
 
@@ -288,15 +308,16 @@ let ubuntu_bionic = {
       , groups = [ "ubuntu_bionic" ]
       }
 
-let docker_host =
-      ubuntu_bionic // {
-      , groups =
-          ubuntu_bionic.groups
-          # [ "docker_host" ]
+let docker =
+      toVMTemplate {
+      , name = "docker"
+      , parent = ubuntu_bionic
+      , description = "Docker installed on ${ubuntu_bionic.description}"
+      , groups = [ "docker_host" ]
       }
 
 
 in {
 , ubuntu_bionic = toPacker ubuntu_bionic
-, docker = toPacker docker_host
+, docker = toPacker docker
 }

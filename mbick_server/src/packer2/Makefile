@@ -22,7 +22,7 @@ validate := $(patsubst %.json,%.validate,$(images))
 
 .PHONY: all build images validate clean clean-all FORCE
 all: images
-build: $(images) $(misc_build)
+build: $(images)
 images: $(bake)
 validate: $(validate)
 clean:
@@ -32,7 +32,7 @@ clean-all: clean
 # we must force, because we don't take into account
 # dependencies on provisioners and scripts
 # TODO: include script dependencies
-$(TEMPLATE_BUILD_DIR)/%.bake: $(TEMPLATE_BUILD_DIR)/%.json FORCE
+$(TEMPLATE_BUILD_DIR)/%.bake: $(TEMPLATE_BUILD_DIR)/%.json $(misc_build) FORCE
 	mkdir -p $(TEMPLATE_BUILD_DIR)
 	VAULT_ADDR=$(vault_address) \
 	VAULT_TOKEN=$$(cat ~/.vault-token) \
