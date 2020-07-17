@@ -126,7 +126,9 @@ let VMTemplate = {
       }
 
 
-let local_host_ip = "TODO"
+let ssh_username = "packer"
+let ssh_password = "packer"
+let ssh_fullname = "packer"
 
 let toPacker =
       \(template : VMTemplate)
@@ -136,13 +138,18 @@ let toPacker =
       let boot_command = [
             , "<esc><esc><enter><wait>"
             , "/install/vmlinuz "
-            , "preseed/url=http://${local_host_ip}:{{ .HTTPPort }}/preseed.cfg "
+            , "preseed/url=http://{{user `local_host_ip`}}:{{ .HTTPPort }}/preseed.cfg "
             ]
             # template.boot_command_suffix
-      let ssh_username = "packer"
-      let ssh_password = "packer"
       in
       {
+      , variables = {
+          , proxmox_user =
+              "{{ vault `/proxmox_user/data/packer` `username` }}"
+          , proxmox_password =
+              "{{ vault `/proxmox_user/data/packer` `password` }}"
+          , hostname = template.name
+          }
       , builders =
           List/map
           Builder
@@ -153,10 +160,8 @@ let toPacker =
             , proxmox_url =
                 networking.HostURL.show lab_config.proxmox_api.address
             , insecure_skip_tls_verify = True
-            , username =
-                "{{ vault `/proxmox_user/data/packer` `username` }}"
-            , password =
-                "{{ vault `/proxmox_user/data/packer` `password` }}"
+            , username = "{{user `proxmox_user`}}"
+            , password = "{{user `proxmox_password`}}"
             , vm_name = template_fullname
             , node = "node1"
             , socket = "1"
@@ -230,7 +235,7 @@ let toPacker =
           , user = ssh_username
           }
         ]
-      , post_processors = [
+      , post-processors = [
           , {
             , type = "vagrant"
             , keep_input_artifact = False
@@ -240,6 +245,8 @@ let toPacker =
           ]
       }
 
+
+let locale = "en_US"
 
 let ubuntu_bionic = {
       , name = "ubuntu-bionic"
@@ -261,7 +268,7 @@ let ubuntu_bionic = {
          , "auto "
          , "console-setup/ask_detect=false "
          , "debconf/frontend=noninteractive "
-         , "debian-installer={{ user `locale` }} "
+         , "debian-installer=${locale} "
          , "hostname={{ user `hostname` }} "
          , "fb=false "
          , "grub-installer/bootdev=/dev/sda<wait> "
@@ -270,12 +277,12 @@ let ubuntu_bionic = {
          , "keyboard-configuration/modelcode=SKIP "
          , "keyboard-configuration/layout=USA "
          , "keyboard-configuration/variant=USA "
-         , "locale={{ user `locale` }} "
+         , "locale=${locale} "
          , "noapic "
-         , "passwd/user-fullname={{ user `ssh_fullname` }} "
-         , "passwd/user-password={{ user `ssh_password` }} "
-         , "passwd/user-password-again={{ user `ssh_password` }} "
-         , "passwd/username={{ user `ssh_username` }} "
+         , "passwd/user-fullname=${ssh_fullname} "
+         , "passwd/user-password=${ssh_password} "
+         , "passwd/user-password-again=${ssh_password} "
+         , "passwd/username=${ssh_username} "
          , "-- <enter>"
          ]
       , groups = [ "ubuntu_bionic" ]
