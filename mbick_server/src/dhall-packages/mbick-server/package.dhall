@@ -1,8 +1,6 @@
 {
 , config =
     ./config.dhall
-, packer =
-    ./packer.dhall
 , packerTemplates =
     ./packerTemplates.dhall
 , terraformConfigs =
