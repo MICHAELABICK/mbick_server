@@ -114,14 +114,4 @@ let docker_config =
 in {
 , docker_dev =
     toTerraform docker_config
-, services_dev =
-    toTerraform
-    mbick-server-terraform.types.Config::{
-    , name = "services_dev"
-    , backend = terraform_backend
-    , remote_state = [
-        , mbick-server-terraform.toTerraformRemoteState docker_config
-        ]
-    , docker_compose_files = docker_services
-    }
 }
