@@ -102,8 +102,7 @@ let JSONProxmoxVM = {
       , desc : Text
       , target_node : Text
       , clone : Text
-      -- TODO: this needs to be updated when the terraform provider gets updated
-      -- , full_clone : Bool
+      , full_clone : Bool
       , cores : Natural
       , sockets : Natural
       , numa : Bool
@@ -135,8 +134,16 @@ let JSONVaultGenericSecretData = {
       }
 
 let JSONNullResource = {
-      , triggers : Map Text Text
-      , provisioner : List JSONProvisioner
+      , Type = {
+          , depends_on : List Text
+          , triggers : Map Text Text
+          , provisioner : List JSONProvisioner
+          }
+      , default = {
+          , depends_on = [] : List Text
+          , triggers = [] : Map Text Text
+          , provisioner = [] : List JSONProvisioner
+          }
       }
       
 let JSONOutput = {
@@ -158,7 +165,7 @@ let JSONResourceGroup = {
           , local_file :
               Map Text JSONLocalFile
           , null_resource :
-              Map Text JSONNullResource
+              Map Text JSONNullResource.Type
           }
       , default = {
           , proxmox_vm_qemu =
@@ -166,7 +173,7 @@ let JSONResourceGroup = {
           , local_file =
               [] : Map Text JSONLocalFile
           , null_resource =
-              [] : Map Text JSONNullResource
+              [] : Map Text JSONNullResource.Type
           }
       }
 
@@ -247,7 +254,7 @@ let toProxmoxVMResourceGroup =
                     )
                 , target_node = vm.target_node
                 , clone = vm.template.name
-                -- , full_clone = True
+                , full_clone = True
                 , cores = vm.cores
                 , sockets = vm.sockets
                 , numa = True
@@ -314,7 +321,7 @@ let toProxmoxVMResourceGroup =
                           , interpreter = None (List Text)
                           }
                       }
-                    ]
+                    ] : List JSONProvisioner
                 }
             }
           ]
@@ -346,10 +353,31 @@ let toOutputs =
 
 let toDockerComposeResourceGroup =
       \(file : DockerComposeFile)
-  ->  JSONResourceGroup::{
+  ->  let depends_on =
+           merge {
+           , ProxmoxVM =
+               \(x : mbick-server-types.ProxmoxVM.Type)
+           ->  [ "proxmox_vm_qemu.${x.name}" ]
+           }
+           file.host
+      let host_url =
+            merge {
+            , ProxmoxVM =
+                \(x : mbick-server-types.ProxmoxVM.Type)
+            ->  networking.HostURL::{
+                , protocol = networking.Protocol.TCP
+                , host = networking.HostAddress.Type.IP x.ip
+                , port = Some 2375
+                }
+            }
+            file.host
+      in
+      JSONResourceGroup::{
       , null_resource = [
           , { mapKey = file.name
-            , mapValue = {
+            , mapValue =
+                JSONNullResource::{
+                , depends_on = depends_on
                 , triggers = [
                     , { mapKey = "timestamp", mapValue = "\${timestamp()}" }
                     ]
@@ -367,7 +395,7 @@ let toDockerComposeResourceGroup =
                                 , { mapKey = "DOCKER_HOST"
                                   , mapValue =
                                       HostURL/show
-                                      file.host_address
+                                      host_url
                                   }
                                 ]
                             , when = None Text
