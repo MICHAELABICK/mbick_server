@@ -76,6 +76,30 @@ let docker01 =
       , groups = [ "docker_host" ]
       , disk_gb = 100
       }
+
+let docker_services = [
+      , {
+        , name = "admin_infra"
+        , file_path =
+            renderDockerComposeFilePath "admin_infra/docker-compose.yml"
+        , host =
+            mbick-server-types.DockerHost.ProxmoxVM docker01
+        }
+      , {
+        , name = "media_server"
+        , file_path =
+            renderDockerComposeFilePath "media_server/docker-compose.yml"
+        , host =
+            mbick-server-types.DockerHost.ProxmoxVM docker01
+        }
+      , {
+        , name = "syncthing"
+        , file_path =
+            renderDockerComposeFilePath "syncthing/docker-compose.yml"
+        , host =
+            mbick-server-types.DockerHost.ProxmoxVM docker01
+        }
+      ]
     
 let docker_config =
       mbick-server-terraform.types.Config::{
@@ -84,6 +108,7 @@ let docker_config =
       , vms = [
           , docker01
           ]
+      , docker_compose_files = docker_services
       }
 
 in {
@@ -97,39 +122,6 @@ in {
     , remote_state = [
         , mbick-server-terraform.toTerraformRemoteState docker_config
         ]
-    , docker_compose_files = [
-        , {
-          , name = "admin_infra"
-          , file_path =
-              renderDockerComposeFilePath "admin_infra/docker-compose.yml"
-          , host_address =
-              networking.HostURL::{
-              , protocol = networking.Protocol.TCP
-              , host = networking.HostAddress.Type.IP "192.168.11.200"
-              , port = Some 2375
-              }
-          }
-        , {
-          , name = "media_server"
-          , file_path =
-              renderDockerComposeFilePath "media_server/docker-compose.yml"
-          , host_address =
-              networking.HostURL::{
-              , protocol = networking.Protocol.TCP
-              , host = networking.HostAddress.Type.IP "192.168.11.200"
-              , port = Some 2375
-              }
-          }
-        , {
-          , name = "syncthing"
-          , file_path = renderDockerComposeFilePath "syncthing/docker-compose.yml"
-          , host_address =
-              networking.HostURL::{
-              , protocol = networking.Protocol.TCP
-              , host = networking.HostAddress.Type.IP "192.168.11.200"
-              , port = Some 2375
-              }
-          }
-        ]
+    , docker_compose_files = docker_services
     }
 }

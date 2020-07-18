@@ -8,6 +8,6 @@ in {
     Text
 , file_path :
     Location
-, host_address :
-    networking.HostURL.Type
+, host :
+    ./DockerHost.dhall
 }

@@ -134,8 +134,16 @@ let JSONVaultGenericSecretData = {
       }
 
 let JSONNullResource = {
-      , triggers : Map Text Text
-      , provisioner : List JSONProvisioner
+      , Type = {
+          , depends_on : List Text
+          , triggers : Map Text Text
+          , provisioner : List JSONProvisioner
+          }
+      , default = {
+          , depends_on = [] : List Text
+          , triggers = [] : Map Text Text
+          , provisioner = [] : List JSONProvisioner
+          }
       }
       
 let JSONOutput = {
@@ -157,7 +165,7 @@ let JSONResourceGroup = {
           , local_file :
               Map Text JSONLocalFile
           , null_resource :
-              Map Text JSONNullResource
+              Map Text JSONNullResource.Type
           }
       , default = {
           , proxmox_vm_qemu =
@@ -165,7 +173,7 @@ let JSONResourceGroup = {
           , local_file =
               [] : Map Text JSONLocalFile
           , null_resource =
-              [] : Map Text JSONNullResource
+              [] : Map Text JSONNullResource.Type
           }
       }
 
@@ -345,10 +353,31 @@ let toOutputs =
 
 let toDockerComposeResourceGroup =
       \(file : DockerComposeFile)
-  ->  JSONResourceGroup::{
+  ->  let depends_on =
+           merge {
+           , ProxmoxVM =
+               \(x : mbick-server-types.ProxmoxVM.Type)
+           ->  [ "proxmox_vm_qemu.${x.name}" ]
+           }
+           file.host
+      let host_url =
+            merge {
+            , ProxmoxVM =
+                \(x : mbick-server-types.ProxmoxVM.Type)
+            ->  networking.HostURL::{
+                , protocol = networking.Protocol.TCP
+                , host = networking.HostAddress.Type.IP x.ip
+                , port = Some 2375
+                }
+            }
+            file.host
+      in
+      JSONResourceGroup::{
       , null_resource = [
           , { mapKey = file.name
-            , mapValue = {
+            , mapValue =
+                JSONNullResource::{
+                , depends_on = depends_on
                 , triggers = [
                     , { mapKey = "timestamp", mapValue = "\${timestamp()}" }
                     ]
@@ -366,7 +395,7 @@ let toDockerComposeResourceGroup =
                                 , { mapKey = "DOCKER_HOST"
                                   , mapValue =
                                       HostURL/show
-                                      file.host_address
+                                      host_url
                                   }
                                 ]
                             , when = None Text
