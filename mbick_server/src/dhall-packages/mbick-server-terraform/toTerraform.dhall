@@ -99,6 +99,10 @@ let JSONLocalFile = {
 
 let JSONProxmoxVM = {
       , name : Text
+      , lifecycle : {
+          , ignore_changes :
+              List Text
+          }
       , desc : Text
       , target_node : Text
       , clone : Text
@@ -222,8 +226,13 @@ let toProxmoxVMResourceGroup =
           , { mapKey = vm.name
             , mapValue = {
                 , name = vm.name
-                , connection =
-                    [ { type = "ssh"
+                , lifecycle = {
+                    -- Needed to fix the issues that could be solved by
+                    -- https://github.com/Telmate/terraform-provider-proxmox/pull/152
+                    , ignore_changes = [ "network" ]
+                    }
+                , connection = [
+                    , { type = "ssh"
                       , user =
                           "\${data.vault_generic_secret.default_user.data[\"username\"]}"
                       , private_key =
