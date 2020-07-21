@@ -362,6 +362,7 @@ let toOutputs =
 
 let toDockerComposeResourceGroup =
       \(file : DockerComposeFile)
+  ->  \(lab_config : mbick-server-types.Config)
   ->  let depends_on =
            merge {
            , ProxmoxVM =
@@ -380,6 +381,14 @@ let toDockerComposeResourceGroup =
                 }
             }
             file.host
+      let vault_address = HostURL/show lab_config.vault_api.address
+      let vault_token_command =
+            "vault token create "
+            ++ "-address=${vault_address} "
+            ++ "-display-name=docker_compose "
+            ++ "-ttl=15m "
+            ++ "-explicit-max-ttl=15m "
+            ++ "-field=token"
       in
       JSONResourceGroup::{
       , null_resource = [
@@ -394,7 +403,8 @@ let toDockerComposeResourceGroup =
                     , JSONProvisioner.LocalExec {
                         , local-exec = {
                             , command =
-                                "docker-compose "
+                                "VAULT_TOKEN=$(${vault_token_command}) "
+                                ++ "docker-compose "
                                 ++ "-f ${renderAbsolutePath file.file_path} "
                                 ++ "up "
                                 ++ "--build "
@@ -405,6 +415,9 @@ let toDockerComposeResourceGroup =
                                   , mapValue =
                                       HostURL/show
                                       host_url
+                                  }
+                                , { mapKey = "VAULT_ADDR"
+                                  , mapValue = vault_address
                                   }
                                 ]
                             , when = None Text
@@ -482,6 +495,8 @@ let toTerraform =
   ->  \(lab_config : mbick-server-types.Config)
   ->  let toLabProxmoxVMResourceGroup =
             \(vm : ProxmoxVM.Type) -> toProxmoxVMResourceGroup vm lab_config
+      let toLabDockerComposeResourceGroup =
+            \(file : DockerComposeFile) -> toDockerComposeResourceGroup file lab_config
       in {
       , terraform = {
           , backend = toBackend terraform_config
@@ -541,7 +556,7 @@ let toTerraform =
             ( List/map
               DockerComposeFile
               JSONResourceGroup.Type
-              toDockerComposeResourceGroup
+              toLabDockerComposeResourceGroup
               terraform_config.docker_compose_files
             )
           )
