@@ -349,17 +349,6 @@ let toProxmoxVMResourceGroup =
           ]
       }
 
-let toOutputs =
-      \(vm : ProxmoxVM.Type)
-  ->  [
-      , { mapKey = "${vm.name}_address"
-        , mapValue =
-            JSONOutput::{
-            , value = vm.ip
-            }
-        }
-      ] : Map Text JSONOutput.Type
-
 let toDockerComposeResourceGroup =
       \(file : DockerComposeFile)
   ->  let depends_on =
@@ -549,12 +538,7 @@ let toTerraform =
           foldJSONResourceGroups
           JSONResourceGroup.default
           : JSONResourceGroup.Type
-      , output =
-          List/concatMap
-          ProxmoxVM.Type
-          (Entry Text JSONOutput.Type)
-          toOutputs
-          terraform_config.vms
+      , output = [] : Map Text JSONOutput.Type
       }
 
 
