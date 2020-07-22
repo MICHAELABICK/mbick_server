@@ -62,6 +62,8 @@ services:
     #   - NET_ADMIN
     restart: unless-stopped
 
+  # Setup with some changes from this Github issue:
+  # https://github.com/Place1/wg-access-server/issues/26
   wg-access-server:
     build:
       context: ./wg-access-server
@@ -79,17 +81,14 @@ services:
       VAULT_ADDR: "${VAULT_ADDR:?VAULT_ADDR is not set}"
       VAULT_TOKEN: "${VAULT_TOKEN:?VAULT_TOKEN is not set}"
     networks:
-      - traefik
+      macvlan:
+        ipv4_address: 192.168.11.7
     ports:
       - "8000:8000/tcp"
       - "51820:51820/udp"
-    labels:
-      - "traefik.enable=true"
-      - 'traefik.http.routers.wireguard.rule=Host(`wireguard.michaelbick.duckdns.org`)'
-      - "traefik.http.services.wireguard.loadbalancer.server.port=8000"
     devices:
       - "/dev/net/tun:/dev/net/tun"
-    # restart: unless-stopped
+    restart: unless-stopped
 
 
 networks:
