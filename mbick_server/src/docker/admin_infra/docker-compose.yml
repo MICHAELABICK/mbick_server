@@ -62,6 +62,34 @@ services:
     #   - NET_ADMIN
     restart: unless-stopped
 
+  # Setup with some changes from this Github issue:
+  # https://github.com/Place1/wg-access-server/issues/26
+  wg-access-server:
+    build:
+      context: ./wg-access-server
+      args:
+        WG_ACCESS_SERVER_TAG: latest
+        VAULT_TAG: 1.4.3
+    # image: place1/wg-access-server
+    container_name: wg-access-server
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - "wg-access-server-config:/data"
+    environment:
+      UPSTREAM_DNS: 192.168.11.3
+      VAULT_ADDR: "${VAULT_ADDR:?VAULT_ADDR is not set}"
+      VAULT_TOKEN: "${VAULT_TOKEN:?VAULT_TOKEN is not set}"
+    networks:
+      macvlan:
+        ipv4_address: 192.168.11.7
+    ports:
+      - "8000:8000/tcp"
+      - "51820:51820/udp"
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    restart: unless-stopped
+
 
 networks:
   traefik:
@@ -87,3 +115,8 @@ volumes:
     driver: local-persist
     driver_opts:
       mountpoint: /mnt/docker_volumes/pihole-dnsmasq
+
+  wg-access-server-config:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/docker_volumes/wg-access-server-config
