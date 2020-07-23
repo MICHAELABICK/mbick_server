@@ -137,8 +137,17 @@ networks:
     internal: true
 
   macvlan:
-    external: true
     name: macvlan
+    driver: macvlan
+    driver_opts:
+      parent: eth0
+    ipam:
+      config:
+        - subnet: 192.168.11.0/24
+
+  # macvlan:
+  #   external: true
+  #   name: macvlan
 
 
 volumes:

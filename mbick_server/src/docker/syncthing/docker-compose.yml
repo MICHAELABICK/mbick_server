@@ -16,6 +16,8 @@ services:
       - 8384:8384
       - 22000:22000
       - 21027:21027/udp
+    networks:
+      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.syncthing.rule=Host(`syncthing.michaelbick.duckdns.org`)"

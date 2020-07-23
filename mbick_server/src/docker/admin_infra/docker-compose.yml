@@ -30,40 +30,6 @@ services:
       - 'traefik.http.routers.traefik.service=api@internal'
     restart: unless-stopped
 
-  pihole:
-    container_name: pihole
-    build:
-      context: ./pihole
-      args:
-        PIHOLE_VERSION: v5.0
-    networks:
-      macvlan:
-        ipv4_address: 192.168.11.3
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp"
-      - "80:80/tcp"
-      - "443:443/tcp"
-    environment:
-      TZ: America/Los_Angeles
-      WEBPASSWORD: 'this-is-a-Password!'
-      DNS1: 1.1.1.1
-      DNS2: 1.0.0.1
-    # Volumes store your data between container upgrades
-    volumes:
-       - pihole-config:/etc/pihole/
-    dns:
-      - 127.0.0.1 # Required to resolve dhcp hostnames from Pi-hole's DNSMasq
-      # - 1.1.1.1 # Optional backup if DNSMasq has problems starting
-    # Recommended but not required (DHCP needs NET_ADMIN)
-    # https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
-    # cap_add:
-    #   - NET_ADMIN
-    restart: unless-stopped
-
-  # Setup with some changes from this Github issue:
-  # https://github.com/Place1/wg-access-server/issues/26
   wg-access-server:
     build:
       context: ./wg-access-server
@@ -78,16 +44,19 @@ services:
       - "wg-access-server-config:/data"
     environment:
       UPSTREAM_DNS: 192.168.11.3
-      VAULT_ADDR: "${VAULT_ADDR:?VAULT_ADDR is not set}"
-      VAULT_TOKEN: "${VAULT_TOKEN:?VAULT_TOKEN is not set}"
+      VAULT_ADDR: "${VAULT_ADDR}"
+      VAULT_TOKEN: "${VAULT_TOKEN}"
     networks:
-      macvlan:
-        ipv4_address: 192.168.11.7
+      - traefik
     ports:
       - "8000:8000/tcp"
       - "51820:51820/udp"
     devices:
       - "/dev/net/tun:/dev/net/tun"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wireguard.rule=Host(`wireguard.michaelbick.duckdns.org`)"
+      - "traefik.http.services.wireguard.loadbalancer.server.port=8000"
     restart: unless-stopped
 
 
@@ -95,27 +64,17 @@ networks:
   traefik:
     name: traefik
 
-  macvlan:
-    name: macvlan
-    driver: macvlan
-    driver_opts:
-      parent: eth0
-    ipam:
-      config:
-        - subnet: 192.168.11.0/24
+  # macvlan:
+  #   name: macvlan
+  #   driver: macvlan
+  #   driver_opts:
+  #     parent: eth0
+  #   ipam:
+  #     config:
+  #       - subnet: 192.168.11.0/24
 
 
 volumes:
-  pihole-config:
-    driver: local-persist
-    driver_opts:
-      mountpoint: /mnt/docker_volumes/pihole-config
-
-  pihole-dnsmasq:
-    driver: local-persist
-    driver_opts:
-      mountpoint: /mnt/docker_volumes/pihole-dnsmasq
-
   wg-access-server-config:
     driver: local-persist
     driver_opts:

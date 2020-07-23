@@ -48,7 +48,7 @@ let dockerTemplate : mbick-server-types.ProxmoxVMTemplate = {
           ]
       }
 
-let largeVM =
+let smallVM =
       \(name : Text)
   ->  \(ip : networking.IPAddress)
   ->  mbick-server-types.ProxmoxVM::
@@ -56,13 +56,25 @@ let largeVM =
       -- , desc = "I don't think this works yet"
       , template = ubuntuTemplate
       , target_node = "node1"
-      , cores = 4
-      , sockets = 2
-      , memory = 16384
-      , disk_gb = 20
+      , cores = 1
+      , sockets = 1
+      , memory = 1024
+      , disk_gb = 25
       , ip = ip
       , subnet = lab_config.subnet
       , gateway = lab_config.gateway
+      }
+  
+let largeVM =
+      \(name : Text)
+  ->  \(ip : networking.IPAddress)
+  ->  ( smallVM
+        name
+        ip
+      ) // {
+      , cores = 4
+      , sockets = 2
+      , memory = 16384
       }
 
 let toTerraform =
@@ -75,6 +87,12 @@ let docker01 =
       , template = dockerTemplate
       , groups = [ "docker_host" ]
       , disk_gb = 100
+      }
+
+let pihole01 =
+      smallVM "pihole01" "192.168.11.3" // {
+      , template = dockerTemplate
+      , groups = [ "docker_host" ]
       }
 
 let docker_services = [
@@ -99,6 +117,13 @@ let docker_services = [
         , host =
             mbick-server-types.DockerHost.ProxmoxVM docker01
         }
+      , {
+        , name = "pihole"
+        , file_path =
+            renderDockerComposeFilePath "pihole/docker-compose.yml"
+        , host =
+            mbick-server-types.DockerHost.ProxmoxVM pihole01
+        }
       ]
     
 let docker_config =
@@ -107,6 +132,7 @@ let docker_config =
       , backend = terraform_backend
       , vms = [
           , docker01
+          , pihole01
           ]
       , docker_compose_files = docker_services
       }
