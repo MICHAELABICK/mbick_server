@@ -7,7 +7,8 @@ FROM hashicorp/vault:${VAULT_TAG} as vault
 
 FROM wg-access-server
 COPY --from=vault /bin/vault /bin/vault
-COPY config.yml /config.yml
+ENV CONFIG=/config.yml
+COPY config.yml ${CONFIG}
 
 CMD WIREGUARD_PRIVATE_KEY=$(VAULT_TOKEN=${VAULT_TOKEN} \
   vault kv get \
