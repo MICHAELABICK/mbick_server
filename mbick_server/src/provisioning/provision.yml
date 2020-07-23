@@ -23,6 +23,39 @@
       iscsi_mountpoint: /mnt/docker_volumes
       iscsi_filesystem: ext4
 
+- hosts: pihole01
+  roles:
+    - role: iscsi_mount
+      become: yes
+      iscsi_portal: 192.168.11.111
+      iscsi_target: iqn.2005-10.org.freenas.ctl:pihole01-volumes
+      iscsi_mountpoint: /mnt/docker_volumes
+      iscsi_filesystem: ext4
+
+  tasks:
+    # Configure for Ubuntu 17.10+ as per PiHole docker instructions:
+    # https://github.com/pi-hole/docker-pi-hole
+    - name: Disable the stub resolver
+      become: yes
+      lineinfile:
+        dest: /etc/systemd/resolved.conf
+        state: present
+        regexp: "^DNSStubListener"
+        line: "DNSStubListener=no"
+
+    - name: Replace /etc/resolve.conf
+      become: yes
+      file:
+        src: /run/systemd/resolve/resolv.conf
+        dest: /etc/resolv.conf
+        state: link
+
+    - name: Restart systemd-resolved
+      become: yes
+      service:
+        name: systemd-resolved
+        state: restarted
+
 - hosts: k3s_node
   roles:
     - xanmanning.k3s
