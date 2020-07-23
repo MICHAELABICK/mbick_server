@@ -46,16 +46,18 @@ services:
       - "wg-access-server-config:/data"
     environment:
       UPSTREAM_DNS: 192.168.11.3
-      VAULT_ADDR: "${VAULT_ADDR:?VAULT_ADDR is not set}"
-      VAULT_TOKEN: "${VAULT_TOKEN:?VAULT_TOKEN is not set}"
-    # macvlan does not work because there are
-    # security limits places on routes to the host
-    network_mode: "host"
+      # UPSTREAM_DNS: 1.1.1.1
+      VAULT_ADDR: "${VAULT_ADDR}"
+      VAULT_TOKEN: "${VAULT_TOKEN}"
     ports:
       - "8000:8000/tcp"
       - "51820:51820/udp"
     devices:
       - "/dev/net/tun:/dev/net/tun"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wireguard.rule=Host(`wireguard.michaelbick.duckdns.org`)"
+      - "traefik.http.services.wireguard.loadbalancer.server.port=8000"
     restart: unless-stopped
 
 
@@ -63,14 +65,14 @@ networks:
   traefik:
     name: traefik
 
-  macvlan:
-    name: macvlan
-    driver: macvlan
-    driver_opts:
-      parent: eth0
-    ipam:
-      config:
-        - subnet: 192.168.11.0/24
+  # macvlan:
+  #   name: macvlan
+  #   driver: macvlan
+  #   driver_opts:
+  #     parent: eth0
+  #   ipam:
+  #     config:
+  #       - subnet: 192.168.11.0/24
 
 
 volumes:
