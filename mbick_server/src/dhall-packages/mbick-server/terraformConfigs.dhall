@@ -118,6 +118,13 @@ let docker_services = [
             mbick-server-types.DockerHost.ProxmoxVM docker01
         }
       , {
+        , name = "backups"
+        , file_path =
+            renderDockerComposeFilePath "backups/docker-compose.yml"
+        , host =
+            mbick-server-types.DockerHost.ProxmoxVM docker01
+        }
+      , {
         , name = "pihole"
         , file_path =
             renderDockerComposeFilePath "pihole/docker-compose.yml"

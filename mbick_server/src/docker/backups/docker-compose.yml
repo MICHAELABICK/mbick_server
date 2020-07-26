@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  restic-server:
+    image: restic/rest-server:0.9.7
+    container_name: restic-server
+    ports:
+      - 8010:8000
+    volumes:
+      - restic-backups:/data
+    environment:
+      OPTIONS: "--append-only --private-repos"
+    restart: unless-stopped
+
+
+volumes:
+  restic-backups:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: 'addr=192.168.11.111,rw'
+      device: ':/mnt/store/restic'
