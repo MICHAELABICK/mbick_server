@@ -144,7 +144,92 @@ let docker_config =
       , docker_compose_files = docker_services
       }
 
+
+let gkeCluster =
+      \(name : Text)
+  ->  let project_id = "mbick-lab"
+      let region = "us-east4"
+      let location = "us-east4-a"
+      in
+      {
+      , provider = {
+          , google = {
+              , project = project_id
+              }
+          }
+      , resource = {
+          , google_compute_network = {
+              , vpc = {
+                  , name = "${project_id}-vpc"
+                  , auto_create_subnetworks = False
+                  }
+              }
+          , google_compute_subnetwork = {
+              , subnet = {
+                  , name = "${project_id}-subnet"
+                  , region = region
+                  , network = "\${google_compute_network.vpc.name}"
+                  , ip_cidr_range = "10.10.0.0/24"
+                  }
+              }
+          , google_container_cluster = [
+              , { mapKey = name
+                , mapValue = {
+                    , name = name
+                    , location = location
+                    , remove_default_node_pool = True
+                    , initial_node_count = 1
+                    , network = "\${google_compute_network.vpc.name}"
+                    , subnetwork = "\${google_compute_subnetwork.subnet.name}"
+                    , master_auth = {
+                        , username = ""
+                        , password = ""
+                        , client_certificate_config = {
+                            , issue_client_certificate = False
+                            }
+                        }
+                    }
+                }
+              ]
+          , google_container_node_pool = [
+              , { mapKey = "${name}_nodes"
+                , mapValue = {
+                    -- , depends_on = [ "google_container_cluster.primary" ]
+                    , name = "\${google_container_cluster.primary.name}-node-pool"
+                    , location = location
+                    , cluster = name
+                    , node_count = 1
+                    , node_config = {
+                        , oauth_scopes = [
+                            , "https://www.googleapis.com/auth/logging.write"
+                            , "https://www.googleapis.com/auth/monitoring"
+                            ]
+                        , metadata = {
+                            , disable_legacy_endpoints = True
+                            }
+                        , labels = {
+                            , env = project_id
+                            }
+                        , preemptible = True
+                        , machine_type = "e2-micro"
+                        , tags = [ "terraform" ]
+                        }
+                    }
+                }  
+              ]
+          }
+      , output = {
+          , kubernetes_cluster_name = {
+              , value = name
+              , description = "GKE Cluster Name"
+              }
+          }
+      }
+
+
 in {
 , docker_dev =
     toTerraform docker_config
+, gke_dev =
+    gkeCluster "primary"
 }
