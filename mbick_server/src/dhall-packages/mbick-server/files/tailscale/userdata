@@ -1,0 +1,32 @@
+#!/bin/bash
+# Based on:
+# https://github.com/voigt/pinetes/blob/master/deployments/kube-system/machine-controller/userdata.example
+
+set -eu
+
+export DEBIAN_FRONTEND=noninteractive
+
+TAILSCALE_ADVERTISE_ROUTES=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/tailscale_advertise_routes" -H "Metadata-Flavor: Google")
+
+# Install Tailscale (From Unstable)
+# https://pkgs.tailscale.com/unstable/
+function install_tailscale {
+  curl -s https://pkgs.tailscale.com/unstable/ubuntu/bionic.gpg | apt-key add -
+  sleep 2
+  curl -s https://pkgs.tailscale.com/unstable/ubuntu/bionic.list | tee /etc/apt/sources.list.d/tailscale.list 
+  sleep 2
+  apt-get update
+  sleep 2
+  apt-get install tailscale
+  sleep 2
+}
+
+function join_tailscale {
+  tailscale up \
+    --advertise-routes=${TAILSCALE_ADVERTISE_ROUTES} \
+    --authkey ${TAILSCALE_AUTH_KEY}
+  sleep 5
+}
+
+install_tailscale
+join_tailscale
