@@ -144,7 +144,178 @@ let docker_config =
       , docker_compose_files = docker_services
       }
 
+
+let gkeCluster =
+      \(name : Text)
+  ->  let project_id = "mbick-lab"
+      let region = "us-east4"
+      let zone = "us-east4-a"
+      let location = zone
+      let subnet = "10.10.0.0/24"
+      let labels = { env = project_id }
+      let tags = [ "terraform-managed" ]
+      let tailscale_userdata_path =
+            renderPath (./files/tailscale/userdata as Location)
+      in
+      {
+      , provider = {
+          , vault =
+              { address = networking.HostURL.show lab_config.vault_api.address }
+          , google = {
+              , project = project_id
+              }
+          }
+      , data = {
+          , local_file = {
+              , tailscale_userdata = {
+                  , filename = tailscale_userdata_path
+                  }
+              }
+          , vault_generic_secret =
+              toMap {
+              , tailscale = { path = "secret/tailscale" }
+              }
+          }
+      , resource = {
+          , google_compute_network = {
+              , net = {
+                  , name = "${project_id}-net"
+                  , auto_create_subnetworks = False
+                  }
+              }
+          , google_compute_subnetwork = {
+              , subnet = {
+                  , name = "${project_id}-subnet"
+                  , region = region
+                  , network = "\${google_compute_network.net.id}"
+                  , ip_cidr_range = subnet
+                  }
+              }
+          -- , google_compute_router = {
+          --     , router = {
+          --         , name = "${project_id}-router"
+          --         , region = region
+          --         , network = "\${google_compute_network.net.id}"
+          --         }
+          --     }
+          -- , google_compute_router_nat = {
+          --     , nat = {
+          --         , name = "${project_id}-nat"
+          --         , router = "\${google_compute_router.router.name}"
+          --         , region = region
+          --         , nat_ip_allocate_option = "AUTO_ONLY"
+          --         , source_subnetwork_ip_ranges_to_nat =
+          --             "ALL_SUBNETWORKS_ALL_IP_RANGES"
+          --         }
+          --     }
+          , google_compute_instance = [
+              , { mapKey = name
+                , mapValue = {
+                    , name = "${project_id}-tailscale-relay"
+                    , machine_type = "f1-micro"
+                    , zone = zone
+
+                    , labels = labels
+                    , tags = tags
+
+                    , boot_disk = {
+                        , auto_delete = True
+                        , initialize_params = {
+                            , image = "ubuntu-os-cloud/ubuntu-2004-lts"
+                            }
+                        }
+                    , network_interface = {
+                        , network =
+                            "\${google_compute_network.net.id}"
+                        , subnetwork =
+                            "\${google_compute_subnetwork.subnet.name}"
+                        , access_config = {
+                            , network_tier = "STANDARD"
+                            }
+                        }
+                    , scheduling = {
+                        , preemptible = False
+                        , on_host_maintenance = "MIGRATE"
+                        }
+
+                    , metadata_startup_script =
+                        "\${data.local_file.tailscale_userdata.content}"
+                    , metadata =
+                        toMap {
+                        , tailscale_auth_key =
+                            "\${data.vault_generic_secret.tailscale.data[\"auth_key\"]}"
+                        , tailscale_advertise_routes = subnet
+                        }
+                    , can_ip_forward = True
+                    }
+                }
+              ]
+          , google_container_cluster = [
+              , { mapKey = name
+                , mapValue = {
+                    , name = name
+                    , location = location
+                    , remove_default_node_pool = True
+                    , initial_node_count = 1
+                    , network =
+                        "\${google_compute_network.net.id}"
+                    , subnetwork =
+                        "\${google_compute_subnetwork.subnet.name}"
+                    , master_auth = {
+                        , username = ""
+                        , password = ""
+                        , client_certificate_config = {
+                            , issue_client_certificate = False
+                            }
+                        }
+                    }
+                }
+              ]
+          , google_container_node_pool = [
+              , { mapKey = "${name}_nodes"
+                , mapValue = {
+                    , name =
+                        "\${google_container_cluster.primary.name}-node-pool"
+                    , location = location
+                    , cluster = name
+                    , node_count = 1
+                    , node_config = {
+                        , oauth_scopes = [
+                            , "https://www.googleapis.com/auth/logging.write"
+                            , "https://www.googleapis.com/auth/monitoring"
+                            ]
+                        , metadata = {
+                            , disable_legacy_endpoints = True
+                            }
+                        -- , preemptible = True
+                        , preemptible = False
+                        , machine_type = "e2-micro"
+
+                        -- , disk_size_gb = 25
+                        , disk_type = "pd-standard"
+
+                        , labels =
+                            labels // {
+                            , vault_in_k8s = True -- for Hashicorp Vault
+                            }
+                        , tags = tags
+                        }
+                    }
+                }  
+              ]
+          }
+      , output = {
+          , kubernetes_cluster_name = {
+              , value = name
+              , description = "GKE Cluster Name"
+              }
+          }
+      }
+
+
 in {
 , docker_dev =
     toTerraform docker_config
+, gke_dev =
+    gkeCluster "primary"
 }
