@@ -153,12 +153,14 @@ let gkeCluster =
       let location = zone
       let subnet = "10.10.0.0/24"
       let labels = { env = project_id }
-      let tags = [ "terraform" ]
+      let tags = [ "terraform-managed" ]
       let tailscale_userdata_path =
             renderPath (./files/tailscale/userdata as Location)
       in
       {
       , provider = {
+          , vault =
+              { address = networking.HostURL.show lab_config.vault_api.address }
           , google = {
               , project = project_id
               }
@@ -168,6 +170,10 @@ let gkeCluster =
               , tailscale_userdata = {
                   , filename = tailscale_userdata_path
                   }
+              }
+          , vault_generic_secret =
+              toMap {
+              , tailscale = { path = "secret/tailscale" }
               }
           }
       , resource = {
@@ -223,7 +229,9 @@ let gkeCluster =
                             "\${google_compute_network.net.id}"
                         , subnetwork =
                             "\${google_compute_subnetwork.subnet.name}"
-                        , access_config = Prelude.Map.empty Text Text -- Creates an epheral IP
+                        , access_config = {
+                            , network_tier = "STANDARD"
+                            }
                         }
                     , scheduling = {
                         , preemptible = False
@@ -234,6 +242,8 @@ let gkeCluster =
                         "\${data.local_file.tailscale_userdata.content}"
                     , metadata =
                         toMap {
+                        , tailscale_auth_key =
+                            "\${data.vault_generic_secret.tailscale.data[\"auth_key\"]}"
                         , tailscale_advertise_routes = subnet
                         }
                     , can_ip_forward = True
@@ -277,10 +287,17 @@ let gkeCluster =
                         , metadata = {
                             , disable_legacy_endpoints = True
                             }
-                        , preemptible = True
+                        -- , preemptible = True
+                        , preemptible = False
                         , machine_type = "e2-micro"
 
-                        , labels = labels
+                        -- , disk_size_gb = 25
+                        , disk_type = "pd-standard"
+
+                        , labels =
+                            labels // {
+                            , vault_in_k8s = True -- for Hashicorp Vault
+                            }
                         , tags = tags
                         }
                     }

@@ -6,6 +6,7 @@ set -eu
 
 export DEBIAN_FRONTEND=noninteractive
 
+TAILSCALE_AUTH_KEY=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/tailscale_auth_key" -H "Metadata-Flavor: Google")
 TAILSCALE_ADVERTISE_ROUTES=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/tailscale_advertise_routes" -H "Metadata-Flavor: Google")
 
 # Install Tailscale (From Unstable)
