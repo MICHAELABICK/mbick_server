@@ -524,15 +524,14 @@ let toTerraform =
       , data = {
           , vault_generic_secret =
               if (List/null ProxmoxVM.Type terraform_config.vms)
-              then [] : List JSONVaultGenericSecretData
-              else [
-              , { mapKey = "proxmox_user"
-                , mapValue = { path = "proxmox_user/terraform" }
+              then None (List JSONVaultGenericSecretData)
+              else
+              Some
+              ( toMap {
+                , proxmox_user = { path = "proxmox_user/terraform" }
+                , default_user = { path = "secret/default_user" }
                 }
-              , { mapKey = "default_user"
-                , mapValue = { path = "secret/default_user" }
-                }
-              ]
+              )
           , vault_aws_access_credentials = {
               , terraform = {
                   , backend = "aws"
@@ -540,11 +539,16 @@ let toTerraform =
                   }
               }
           , terraform_remote_state =
-              List/map
-              types.RemoteState
-              (Entry Text (JSON.Tagged JSONRemoteStateData))
-              toRemoteStateData
-              terraform_config.remote_state
+              if (List/null types.RemoteState terraform_config.remote_state)
+              then None (Map Text (JSON.Tagged JSONRemoteStateData))
+              else
+              Some
+              ( List/map
+                types.RemoteState
+                (Entry Text (JSON.Tagged JSONRemoteStateData))
+                toRemoteStateData
+                terraform_config.remote_state
+              )
           }
       , resource =
           List/fold
@@ -568,7 +572,7 @@ let toTerraform =
           foldJSONResourceGroups
           JSONResourceGroup.default
           : JSONResourceGroup.Type
-      , output = [] : Map Text JSONOutput.Type
+      , output = None (Map Text JSONOutput.Type)
       }
 
 
