@@ -392,23 +392,38 @@ let toDockerComposeResourceGroup =
                     , JSONProvisioner.LocalExec {
                         , local-exec = {
                             , command =
+                                "docker-compose "
+                                ++ "-f ${renderAbsolutePath file.file_path} "
+                                ++ "build "
+                                ++ "--parallel"
+                            , environment =
+                               Some
+                               ( toMap {
+                                 , DOCKER_HOST = HostURL/show host_url
+                                 , COMPOSE_DOCKER_CLI_BUILD = "1"
+                                 , DOCKER_BUILDKIT = "1"
+                                 }
+                               )
+                            , when = None Text
+                            , interpreter = None (List Text)
+                            }
+                        }
+                    , JSONProvisioner.LocalExec {
+                        , local-exec = {
+                            , command =
                                 "VAULT_TOKEN=$(${vault_token_command}) "
                                 ++ "docker-compose "
                                 ++ "-f ${renderAbsolutePath file.file_path} "
                                 ++ "up "
-                                ++ "--build "
                                 ++ "--remove-orphans "
                                 ++ "-d"
-                            , environment = Some [
-                                , { mapKey = "DOCKER_HOST"
-                                  , mapValue =
-                                      HostURL/show
-                                      host_url
+                            , environment =
+                                Some
+                                ( toMap {
+                                  , DOCKER_HOST = HostURL/show host_url
+                                  , VAULT_ADDR = vault_address
                                   }
-                                , { mapKey = "VAULT_ADDR"
-                                  , mapValue = vault_address
-                                  }
-                                ]
+                                )
                             , when = None Text
                             , interpreter = None (List Text)
                             }
@@ -509,15 +524,14 @@ let toTerraform =
       , data = {
           , vault_generic_secret =
               if (List/null ProxmoxVM.Type terraform_config.vms)
-              then [] : List JSONVaultGenericSecretData
-              else [
-              , { mapKey = "proxmox_user"
-                , mapValue = { path = "proxmox_user/terraform" }
+              then None (List JSONVaultGenericSecretData)
+              else
+              Some
+              ( toMap {
+                , proxmox_user = { path = "proxmox_user/terraform" }
+                , default_user = { path = "secret/default_user" }
                 }
-              , { mapKey = "default_user"
-                , mapValue = { path = "secret/default_user" }
-                }
-              ]
+              )
           , vault_aws_access_credentials = {
               , terraform = {
                   , backend = "aws"
@@ -525,11 +539,16 @@ let toTerraform =
                   }
               }
           , terraform_remote_state =
-              List/map
-              types.RemoteState
-              (Entry Text (JSON.Tagged JSONRemoteStateData))
-              toRemoteStateData
-              terraform_config.remote_state
+              if (List/null types.RemoteState terraform_config.remote_state)
+              then None (Map Text (JSON.Tagged JSONRemoteStateData))
+              else
+              Some
+              ( List/map
+                types.RemoteState
+                (Entry Text (JSON.Tagged JSONRemoteStateData))
+                toRemoteStateData
+                terraform_config.remote_state
+              )
           }
       , resource =
           List/fold
@@ -553,7 +572,7 @@ let toTerraform =
           foldJSONResourceGroups
           JSONResourceGroup.default
           : JSONResourceGroup.Type
-      , output = [] : Map Text JSONOutput.Type
+      , output = None (Map Text JSONOutput.Type)
       }
 
 
