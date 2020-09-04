@@ -392,23 +392,38 @@ let toDockerComposeResourceGroup =
                     , JSONProvisioner.LocalExec {
                         , local-exec = {
                             , command =
+                                "docker-compose "
+                                ++ "-f ${renderAbsolutePath file.file_path} "
+                                ++ "build "
+                                ++ "--parallel"
+                            , environment =
+                               Some
+                               ( toMap {
+                                 , DOCKER_HOST = HostURL/show host_url
+                                 , COMPOSE_DOCKER_CLI_BUILD = "1"
+                                 , DOCKER_BUILDKIT = "1"
+                                 }
+                               )
+                            , when = None Text
+                            , interpreter = None (List Text)
+                            }
+                        }
+                    , JSONProvisioner.LocalExec {
+                        , local-exec = {
+                            , command =
                                 "VAULT_TOKEN=$(${vault_token_command}) "
                                 ++ "docker-compose "
                                 ++ "-f ${renderAbsolutePath file.file_path} "
                                 ++ "up "
-                                ++ "--build "
                                 ++ "--remove-orphans "
                                 ++ "-d"
-                            , environment = Some [
-                                , { mapKey = "DOCKER_HOST"
-                                  , mapValue =
-                                      HostURL/show
-                                      host_url
+                            , environment =
+                                Some
+                                ( toMap {
+                                  , DOCKER_HOST = HostURL/show host_url
+                                  , VAULT_ADDR = vault_address
                                   }
-                                , { mapKey = "VAULT_ADDR"
-                                  , mapValue = vault_address
-                                  }
-                                ]
+                                )
                             , when = None Text
                             , interpreter = None (List Text)
                             }

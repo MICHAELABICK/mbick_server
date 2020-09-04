@@ -32,7 +32,6 @@ def main():
         for filename in glob(os.path.join(cwd, "*.tf.json.dhall")):
             cmd = [
                     "dhall-to-json",
-                    "--pretty",
                     "--omit-empty",
                     "--file",
                     filename,
